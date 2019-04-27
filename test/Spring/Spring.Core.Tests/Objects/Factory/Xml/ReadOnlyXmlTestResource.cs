@@ -39,7 +39,7 @@ namespace Spring.Objects.Factory.Xml
     public class ReadOnlyXmlTestResource : IResource 
     {
         private readonly IResource underlyingResource;
-        private const string TestDataFolder = ".";
+        private const string TestDataFolder = "Data";
 
         /// <summary>
         /// Creates a new instance of the
@@ -56,7 +56,10 @@ namespace Spring.Objects.Factory.Xml
                 ConfigurableResourceLoader loader = new ConfigurableResourceLoader();
                 underlyingResource = loader.GetResource(fileName);
             }
-            underlyingResource = new FileSystemResource(fileName);
+            else
+            {
+                underlyingResource = new FileSystemResource(fileName);
+            }
         }
 
         /// <summary>

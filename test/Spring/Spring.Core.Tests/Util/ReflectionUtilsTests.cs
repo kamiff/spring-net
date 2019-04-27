@@ -27,7 +27,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
 using System.Runtime.CompilerServices;
-using System.Windows.Forms;
 using NUnit.Framework;
 
 using Spring.Objects;
@@ -528,10 +527,11 @@ namespace Spring.Util
             // TODO : actually emit the attribute and check it...
         }
 
+#if !NETCOREAPP
         [Test]
         public void CreatCustomAttriubtesFromCustomAttributeData()
         {
-            Type control = typeof(Control);
+            Type control = typeof(System.Windows.Forms.Control);
             MethodInfo mi = control.GetMethod("get_Font");
             System.Collections.Generic.IList<CustomAttributeData> attributes = CustomAttributeData.GetCustomAttributes(mi.ReturnParameter);
             CustomAttributeBuilder builder = null;
@@ -540,8 +540,8 @@ namespace Spring.Util
                 builder = ReflectionUtils.CreateCustomAttribute(customAttributeData);
                 Assert.IsNotNull(builder);
             }
-
         }
+#endif
 
         [Test]
         public void CreatCustomAttriubtesFromCustomAttributeDataWithSingleEnum()
@@ -716,6 +716,7 @@ namespace Spring.Util
 
         }
 
+#if !NETCOREAPP
         [Test]
         public void CreateCustomAttributeUsingDefaultValuesForTheConstructor()
         {
@@ -783,6 +784,7 @@ namespace Spring.Util
             Assert.AreEqual(expectedAge, att.Age);
             Assert.IsFalse(att.HasSwallowedExplosives);
         }
+#endif
 
         [Test]
         public void HasAtLeastOneMethodWithName()
@@ -922,7 +924,7 @@ namespace Spring.Util
             Assert.IsNotNull(candidateMethods[1]);
             Assert.IsNotNull(candidateMethods[2]);
             Assert.AreEqual("ParamArrayMatch", foo.MethodWithSimilarArguments(1, new object()));
-            Assert.AreEqual("ExactMatch", foo.MethodWithSimilarArguments(1, (GetMethodByArgumentValuesTarget.DummyArgumentType[])typedArg));
+            Assert.AreEqual("ExactMatch", foo.MethodWithSimilarArguments(1, typedArg));
             Assert.AreEqual("AssignableMatch", foo.MethodWithSimilarArguments(1, (ICollection)typedArg));
 
             MethodInfo resolvedMethod = ReflectionUtils.GetMethodByArgumentValues(candidateMethods, new object[] { 1, typedArg });
@@ -950,7 +952,7 @@ namespace Spring.Util
             Assert.IsNotNull(candidateMethods[2]);
             Assert.IsNotNull(candidateMethods[3]);
             Assert.AreEqual("ParamArrayMatch", foo.MethodWithSimilarArguments(1, new object()));
-            Assert.AreEqual("ExactMatch", foo.MethodWithSimilarArguments(1, (GetMethodByArgumentValuesTarget.DummyArgumentType[])typedArg));
+            Assert.AreEqual("ExactMatch", foo.MethodWithSimilarArguments(1, typedArg));
             Assert.AreEqual("AssignableMatch", foo.MethodWithSimilarArguments(1, (ICollection)typedArg));
             Assert.AreEqual("NullableArgumentMatch", foo.MethodWithNullableArgument(null));
 
@@ -975,7 +977,7 @@ namespace Spring.Util
             Assert.IsNotNull(candidateConstructors[1]);
             Assert.IsNotNull(candidateConstructors[2]);
             Assert.AreEqual("ParamArrayMatch", new GetMethodByArgumentValuesTarget(1, new object()).SelectedConstructor);
-            Assert.AreEqual("ExactMatch", new GetMethodByArgumentValuesTarget(1, (GetMethodByArgumentValuesTarget.DummyArgumentType[])typedArg).SelectedConstructor);
+            Assert.AreEqual("ExactMatch", new GetMethodByArgumentValuesTarget(1, typedArg).SelectedConstructor);
             Assert.AreEqual("AssignableMatch", new GetMethodByArgumentValuesTarget(1, (ICollection)typedArg).SelectedConstructor);
 
             ConstructorInfo resolvedConstructor = ReflectionUtils.GetConstructorByArgumentValues(candidateConstructors, new object[] { 1, typedArg });
@@ -1208,7 +1210,11 @@ namespace Spring.Util
         {
             IList attrs = ReflectionUtils.GetCustomAttributes(typeof(ClassWithAttributes));
 
+#if NETCOREAPP
+            Assert.AreEqual(1, attrs.Count);
+#else
             Assert.AreEqual(2, attrs.Count);
+#endif
         }
 
         [Test]
@@ -1216,7 +1222,11 @@ namespace Spring.Util
         {
             IList attrs = ReflectionUtils.GetCustomAttributes(typeof(ClassWithAttributes).GetMethod("MethodWithAttributes"));
 
+#if NETCOREAPP
+            Assert.AreEqual(1, attrs.Count);
+#else
             Assert.AreEqual(2, attrs.Count);
+#endif
         }
 
         #endregion
@@ -1280,6 +1290,7 @@ namespace Spring.Util
             return one + two;
         }
 
+#if !NETCOREAPP
         private Attribute CheckForPresenceOfCustomAttribute(
             CustomAttributeBuilder attBuilder, Type attType)
         {
@@ -1310,7 +1321,7 @@ namespace Spring.Util
             classBuilder.SetCustomAttribute(attBuilder);
             return classBuilder.CreateType();
         }
-
+#endif
         #endregion
     }
 

@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace Spring.Transaction.Interceptor
@@ -89,11 +90,11 @@ namespace Spring.Transaction.Interceptor
                     rbta.TransactionIsolationLevel = ta.IsolationLevel;
                     rbta.ReadOnly = ta.ReadOnly;
                     rbta.TransactionTimeout = ta.Timeout;
-                    rbta.EnterpriseServicesInteropOption = ta.EnterpriseServicesInteropOption;
+                    rbta.AsyncFlowOption = ta.AsyncFlowOption;
 
                     Type[] rbf = ta.RollbackFor;
 
-                    IList rollBackRules = new ArrayList();
+                    var rollBackRules = new List<RollbackRuleAttribute>();
 
                     if (rbf != null)
                     {

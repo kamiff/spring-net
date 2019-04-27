@@ -1,5 +1,3 @@
-#region License
-
 /*
  * Copyright 2002-2010 the original author or authors.
  *
@@ -15,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#endregion
 
 using System;
 using System.Collections;
@@ -52,7 +48,7 @@ namespace Spring.Objects.Factory.Support
         /// <param name="objectFactory">The object factory.</param>
         public ObjectDefinitionValueResolver(AbstractObjectFactory objectFactory)
         {
-            this.log = LogManager.GetLogger(this.GetType());
+            log = LogManager.GetLogger(GetType());
 
             this.objectFactory = objectFactory;
         }
@@ -140,31 +136,27 @@ namespace Spring.Objects.Factory.Support
             {
                 resolvedValue = argumentValue;
             }
-            else if (argumentValue is ICustomValueReferenceHolder)
+            else if (argumentValue is ICustomValueReferenceHolder referenceHolder)
             {
-                resolvedValue = ((ICustomValueReferenceHolder) argumentValue).Resolve(objectFactory, name, definition, argumentName, argumentValue);
+                resolvedValue = referenceHolder.Resolve(objectFactory, name, definition, argumentName, referenceHolder);
             }
-            else if (argumentValue is ObjectDefinitionHolder)
+            else if (argumentValue is ObjectDefinitionHolder holder)
             {
                 // contains an IObjectDefinition with name and aliases...
-                ObjectDefinitionHolder holder = (ObjectDefinitionHolder)argumentValue;
                 resolvedValue = ResolveInnerObjectDefinition(name, holder.ObjectName, argumentName, holder.ObjectDefinition, definition.IsSingleton);
             }
-            else if (argumentValue is IObjectDefinition)
+            else if (argumentValue is IObjectDefinition def)
             {
                 // resolve plain IObjectDefinition, without contained name: use dummy name... 
-                IObjectDefinition def = (IObjectDefinition)argumentValue;
                 resolvedValue = ResolveInnerObjectDefinition(name, "(inner object)", argumentName, def, definition.IsSingleton);
 
             }
-            else if (argumentValue is RuntimeObjectReference)
+            else if (argumentValue is RuntimeObjectReference reference)
             {
-                RuntimeObjectReference roref = (RuntimeObjectReference)argumentValue;
-                resolvedValue = ResolveReference(definition, name, argumentName, roref);
+                resolvedValue = ResolveReference(definition, name, argumentName, reference);
             }
-            else if (argumentValue is ExpressionHolder)
+            else if (argumentValue is ExpressionHolder expHolder)
             {
-                ExpressionHolder expHolder = (ExpressionHolder)argumentValue;
                 object context = null;
                 IDictionary<string, object> variables = null;
 
@@ -180,13 +172,12 @@ namespace Spring.Objects.Factory.Support
                                        ? null
                                        : ResolveValueIfNecessary(name, definition, "Variables",
                                                                  variablesProperty.Value));
-                    if (vars is IDictionary<string, object>)
+                    if (vars is IDictionary<string, object> objects)
                     {
-                        variables = (IDictionary<string, object>)vars;
+                        variables = objects;
                     }
-                    if (vars is IDictionary)
+                    if (vars is IDictionary temp)
                     {
-                        IDictionary temp = (IDictionary) vars;
                         variables = new Dictionary<string, object>(temp.Count);
                         foreach (DictionaryEntry entry in temp)
                         {
@@ -195,24 +186,29 @@ namespace Spring.Objects.Factory.Support
                     }
                     else
                     {
-                        if (vars != null) throw new ArgumentException("'Variables' must resolve to an IDictionary");
+                        if (vars != null)
+                        {
+                            throw new ArgumentException("'Variables' must resolve to an IDictionary");
+                        }
                     }
                 }
 
-                if (variables == null) variables = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                if (variables == null)
+                {
+                    variables = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                }
                 // add 'this' objectfactory reference to variables
                 variables.Add(Expression.ReservedVariableNames.CurrentObjectFactory, objectFactory);
 
                 resolvedValue = expHolder.Expression.GetValue(context, variables);
             }
-            else if (argumentValue is IManagedCollection)
+            else if (argumentValue is IManagedCollection collection)
             {
                 resolvedValue =
-                    ((IManagedCollection)argumentValue).Resolve(name, definition, argumentName, ResolveValueIfNecessary);
+                    collection.Resolve(name, definition, argumentName, ResolveValueIfNecessary);
             }
-            else if (argumentValue is TypedStringValue)
+            else if (argumentValue is TypedStringValue tsv)
             {
-                TypedStringValue tsv = (TypedStringValue)argumentValue;
                 try
                 {
                     Type resolvedTargetType = ResolveTargetType(tsv);
@@ -326,7 +322,7 @@ namespace Spring.Objects.Factory.Support
             while (this.objectFactory.IsObjectNameInUse(actualInnerObjectName))
             {
                 counter++;
-                actualInnerObjectName = innerObjectName + ObjectFactoryUtils.GENERATED_OBJECT_NAME_SEPARATOR + counter;
+                actualInnerObjectName = innerObjectName + ObjectFactoryUtils.GeneratedObjectNameSeparator + counter;
             }
             return actualInnerObjectName;
         }
@@ -349,14 +345,12 @@ namespace Spring.Objects.Factory.Support
         /// <returns>A reference to another object in the factory.</returns>
         protected virtual object ResolveReference(IObjectDefinition definition, string name, string argumentName, RuntimeObjectReference reference)
         {
-            #region Instrumentation
             if (log.IsDebugEnabled)
             {
                 log.Debug(
                         string.Format(CultureInfo.InvariantCulture, "Resolving reference from property '{0}' in object '{1}' to object '{2}'.",
                                       argumentName, name, reference.ObjectName));
             }
-            #endregion
 
             try
             {
@@ -365,9 +359,8 @@ namespace Spring.Objects.Factory.Support
                     if (null == objectFactory.ParentObjectFactory)
                     {
                         throw new ObjectCreationException(definition.ResourceDescription, name,
-                                                          string.Format(
-                                                              "Can't resolve reference to '{0}' in parent factory: " + "no parent factory available.",
-                                                              reference.ObjectName));
+                            $"Can't resolve reference to '{reference.ObjectName}' in parent factory: " +
+                            "no parent factory available.");
                     }
                     return objectFactory.ParentObjectFactory.GetObject(reference.ObjectName);
                 }

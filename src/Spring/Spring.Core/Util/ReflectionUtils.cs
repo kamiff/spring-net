@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Security;
 using System.Security.Permissions;
 using System.Text;
 using System.Runtime.CompilerServices;
@@ -45,6 +44,8 @@ namespace Spring.Util
     /// <author>Bruno Baia (.NET)</author>
     public sealed class ReflectionUtils
     {
+        internal static Type[] EmptyTypes = new Type[0];
+
         /// <summary>
         /// Convenience <see cref="System.Reflection.BindingFlags"/> value that will
         /// match all private and public, static and instance members on a class
@@ -260,8 +261,14 @@ namespace Spring.Util
         public static Type[] GetParameterTypes(ParameterInfo[] args)
         {
             AssertUtils.ArgumentNotNull(args, "args");
-            Type[] types = new Type[args.Length];
-            for (int i = 0; i < args.Length; i++)
+
+            if (args.Length == 0)
+            {
+                return EmptyTypes;
+            }
+            
+            var types = new Type[args.Length];
+            for (int i = 0; i < (uint) args.Length; i++)
             {
                 types[i] = args[i].ParameterType;
             }
@@ -1239,28 +1246,19 @@ namespace Spring.Util
                 }
                 else if (attrsData.Count > 0)
                 {
-                    if (SystemUtils.Clr4Runtime)
+                    bool hasSecurityAttribute = false;
+                    foreach (CustomAttributeData cad in attrsData)
                     {
-                        bool hasSecurityAttribute = false;
-                        foreach (CustomAttributeData cad in attrsData)
+                        if (typeof(SecurityAttribute).IsAssignableFrom(cad.Constructor.DeclaringType))
                         {
-                            if (typeof(SecurityAttribute).IsAssignableFrom(cad.Constructor.DeclaringType))
-                            {
-                                hasSecurityAttribute = true;
-                                break;
-                            }
+                            hasSecurityAttribute = true;
+                            break;
                         }
-                        if (hasSecurityAttribute)
-                        {
-                            attributes.AddRange(attrs);
-                        }
-                        else
-                        {
-                            foreach (CustomAttributeData cad in attrsData)
-                            {
-                                attributes.Add(cad);
-                            }
-                        }
+                    }
+
+                    if (hasSecurityAttribute)
+                    {
+                        attributes.AddRange(attrs);
                     }
                     else
                     {
@@ -1609,9 +1607,9 @@ namespace Spring.Util
                 }
 
                 FieldInfo[] fields = GetFields(type);
-                SecurityCritical.ExecutePrivileged(new PermissionSet(PermissionState.Unrestricted), delegate
+                Action callback = () =>
                 {
-                    DynamicMethod dm = new DynamicMethod(type.FullName + ".ShallowCopy", null, new Type[] { typeof(object), typeof(object) }, type.Module, true);
+                    DynamicMethod dm = new DynamicMethod(type.FullName + ".ShallowCopy", null, new Type[] {typeof(object), typeof(object)}, type.Module, true);
                     ILGenerator ilGen = dm.GetILGenerator();
                     ilGen.DeclareLocal(type);
                     ilGen.DeclareLocal(type);
@@ -1629,15 +1627,23 @@ namespace Spring.Util
                         ilGen.Emit(OpCodes.Ldfld, field);
                         ilGen.Emit(OpCodes.Stfld, field);
                     }
+
                     ilGen.Emit(OpCodes.Ret);
 
-                    handler = (MemberwiseCopyHandler)dm.CreateDelegate(typeof(MemberwiseCopyHandler));
-                });
+                    handler = (MemberwiseCopyHandler) dm.CreateDelegate(typeof(MemberwiseCopyHandler));
+                };
+
+#if NETSTANDARD
+                callback();
+#else
+                SecurityCritical.ExecutePrivileged(new System.Security.PermissionSet(PermissionState.Unrestricted), callback);
+#endif
 
                 s_handlerCache[type] = handler;
             }
             return handler;
         }
+
 
         #region Field Cache Management for "MemberwiseCopy"
 

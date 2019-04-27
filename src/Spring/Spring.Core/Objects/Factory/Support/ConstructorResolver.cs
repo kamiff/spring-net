@@ -1,5 +1,3 @@
-#region License
-
 /*
  * Copyright 2002-2010 the original author or authors.
  *
@@ -16,10 +14,7 @@
  * limitations under the License.
  */
 
-#endregion
-
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -98,17 +93,14 @@ namespace Spring.Objects.Factory.Support
             ConstructorInstantiationInfo constructorInstantiationInfo = GetConstructorInstantiationInfo(
                 objectName, rod, chosenCtors, explicitArgs);
 
-            wrapper.WrappedInstance = instantiationStrategy.Instantiate(rod, objectName, this.objectFactory,
+            wrapper.WrappedInstance = instantiationStrategy.Instantiate(rod, objectName, objectFactory,
                     constructorInstantiationInfo.ConstructorInfo, constructorInstantiationInfo.ArgInstances);
-
-            #region Instrumentation
 
             if (log.IsDebugEnabled)
             {
-                log.Debug(string.Format(CultureInfo.InvariantCulture, "Object '{0}' instantiated via constructor [{1}].", objectName, constructorInstantiationInfo.ConstructorInfo));
+                log.Debug(
+                    $"Object '{objectName}' instantiated via constructor [{constructorInstantiationInfo.ConstructorInfo}].");
             }
-
-            #endregion
 
             return wrapper;
         }
@@ -119,17 +111,16 @@ namespace Spring.Objects.Factory.Support
         /// </summary>
         /// <param name="objectName">Name of the object.</param>
         /// <param name="rod">The RootObjectDefinition</param>
-        /// <param name="chosenCtors">The explicitly chosen ctors.</param>
+        /// <param name="chosenConstructors">The explicitly chosen ctors.</param>
         /// <param name="explicitArgs">The explicit chose ctor args.</param>
         /// <returns>A ConstructorInstantiationInfo containg the specified constructor in the RootObjectDefinition or
         /// one based on type matching.</returns>
-        public ConstructorInstantiationInfo GetConstructorInstantiationInfo(string objectName, RootObjectDefinition rod,
-                                                  ConstructorInfo[] chosenCtors, object[] explicitArgs)
+        public ConstructorInstantiationInfo GetConstructorInstantiationInfo(
+            string objectName,
+            RootObjectDefinition rod,
+            ConstructorInfo[] chosenConstructors,
+            object[] explicitArgs)
         {
-
-            ObjectWrapper wrapper = new ObjectWrapper();
-
-            ConstructorInfo constructorToUse = null;
             object[] argsToUse = null;
 
             if (explicitArgs != null)
@@ -141,13 +132,13 @@ namespace Spring.Objects.Factory.Support
                 //TODO performance optmization on cached ctors.
             }
 
-
             // Need to resolve the constructor.
-            bool autowiring = (chosenCtors != null ||
-                               rod.ResolvedAutowireMode == AutoWiringMode.Constructor);
+            bool autowiring = chosenConstructors != null || rod.ResolvedAutowireMode == AutoWiringMode.Constructor;
             ConstructorArgumentValues resolvedValues = null;
+            ObjectWrapper wrapper = null;
+            ConstructorInfo constructorToUse = null;
 
-            int minNrOfArgs = 0;
+            int minNrOfArgs;
             if (explicitArgs != null)
             {
                 minNrOfArgs = explicitArgs.Length;
@@ -156,44 +147,50 @@ namespace Spring.Objects.Factory.Support
             {
                 ConstructorArgumentValues cargs = rod.ConstructorArgumentValues;
                 resolvedValues = new ConstructorArgumentValues();
+                wrapper = new ObjectWrapper();
                 minNrOfArgs = ResolveConstructorArguments(objectName, rod, wrapper, cargs, resolvedValues);
             }
             // Take specified constructors, if any.            
-            ConstructorInfo[] candidates = (chosenCtors != null
-                                                ? chosenCtors
-                                                : AutowireUtils.GetConstructors(rod, 0));
+            ConstructorInfo[] candidates = chosenConstructors ?? AutowireUtils.GetConstructors(rod, 0);
             AutowireUtils.SortConstructors(candidates);
-            int minTypeDiffWeight = Int32.MaxValue;
+            int minTypeDiffWeight = int.MaxValue;
 
             for (int i = 0; i < candidates.Length; i++)
             {
                 ConstructorInfo candidate = candidates[i];
-                Type[] paramTypes = ReflectionUtils.GetParameterTypes(candidate.GetParameters());
-                if (constructorToUse != null && argsToUse.Length > paramTypes.Length)
+                var parameters = candidate.GetParameters();
+                if (constructorToUse != null && argsToUse.Length > parameters.Length)
                 {
                     // already found greedy constructor that can be satisfied, so
                     // don't look any further, there are only less greedy constructors left...
                     break;
                 }
-                if (paramTypes.Length < minNrOfArgs)
+                if (parameters.Length < minNrOfArgs)
                 {
                     throw new ObjectCreationException(rod.ResourceDescription, objectName,
-                                  string.Format(CultureInfo.InvariantCulture,
-                                                "'{0}' constructor arguments specified but no matching constructor found "
-                                                + "in object '{1}' (hint: specify argument indexes, names, or "
-                                                + "types to avoid ambiguities).", minNrOfArgs, objectName));
+                        $"'{minNrOfArgs}' constructor arguments specified but no matching constructor found " +
+                        $"in object '{objectName}' (hint: specify argument indexes, names, or " +
+                        "types to avoid ambiguities).");
                 }
-                ArgumentsHolder args = null;
 
+                Type[] paramTypes = ReflectionUtils.GetParameterTypes(parameters);
+                ArgumentsHolder args;
                 if (resolvedValues != null)
                 {
-                    UnsatisfiedDependencyExceptionData unsatisfiedDependencyExceptionData = null;
                     // Try to resolve arguments for current constructor
 
                     //need to check for null as indicator of no ctor arg match instead of using exceptions for flow
                     //control as in the Java implementation
-                    args = CreateArgumentArray(objectName, rod, resolvedValues, wrapper, paramTypes, candidate,
-                                                autowiring, out unsatisfiedDependencyExceptionData);
+                    args = CreateArgumentArray(
+                        objectName, 
+                        rod, 
+                        resolvedValues, 
+                        wrapper, 
+                        paramTypes, 
+                        candidate,
+                        autowiring,
+                        out var unsatisfiedDependencyExceptionData);
+
                     if (args == null)
                     {
                         if (i == candidates.Length - 1 && constructorToUse == null)
@@ -211,12 +208,11 @@ namespace Spring.Objects.Factory.Support
                 else
                 {
                     // Explicit arguments given -> arguments length must match exactly
-                    if (paramTypes.Length != explicitArgs.Length)
+                    if (parameters.Length != explicitArgs.Length)
                     {
                         continue;
                     }
-                    args = new ArgumentsHolder(explicitArgs);
-
+                    args = ArgumentsHolder.Create(explicitArgs);
                 }
                 int typeDiffWeight = args.GetTypeDifferenceWeight(paramTypes);
                 // Choose this constructor if it represents the closest match.
@@ -226,9 +222,7 @@ namespace Spring.Objects.Factory.Support
                     argsToUse = args.arguments;
                     minTypeDiffWeight = typeDiffWeight;
                 }
-
             }
-
 
             if (constructorToUse == null)
             {
@@ -236,8 +230,6 @@ namespace Spring.Objects.Factory.Support
             }
 
             return new ConstructorInstantiationInfo(constructorToUse, argsToUse);
-
-            
         }
 
         /// <summary>
@@ -360,14 +352,10 @@ namespace Spring.Objects.Factory.Support
                 object objectInstance = instantiationStrategy.Instantiate(definition, name, objectFactory, factoryMethodCandidate, arguments);
                 wrapper.WrappedInstance = objectInstance;
 
-                #region Instrumentation
-
                 if (log.IsDebugEnabled)
                 {
-                    log.Debug(string.Format(CultureInfo.InvariantCulture, "Object '{0}' instantiated via factory method [{1}].", name, factoryMethodCandidate));
+                    log.Debug($"Object '{name}' instantiated via factory method [{factoryMethodCandidate}].");
                 }
-
-                #endregion
 
                 return wrapper;
             }
@@ -376,8 +364,7 @@ namespace Spring.Objects.Factory.Support
 
             // if we get here, we didn't match any method...
             throw new ObjectDefinitionStoreException(
-                    string.Format(CultureInfo.InvariantCulture, "Cannot find matching factory method '{0} on Type [{1}].", definition.FactoryMethodName,
-                                  factoryClass));
+                $"Cannot find matching factory method '{definition.FactoryMethodName} on Type [{factoryClass}].");
         }
 
         /// <summary>
@@ -387,17 +374,32 @@ namespace Spring.Objects.Factory.Support
         /// <remarks>When return value is null the out parameter UnsatisfiedDependencyExceptionData will contain
         /// information for use in throwing a UnsatisfiedDependencyException by the caller.  This avoids using
         /// exceptions for flow control as in the original implementation.</remarks>
-        private ArgumentsHolder CreateArgumentArray(string objectName, RootObjectDefinition rod, ConstructorArgumentValues resolvedValues, ObjectWrapper wrapper, Type[] paramTypes, MethodBase methodOrCtorInfo, bool autowiring, out UnsatisfiedDependencyExceptionData unsatisfiedDependencyExceptionData)
+        private ArgumentsHolder CreateArgumentArray(
+            string objectName, 
+            RootObjectDefinition rod,
+            ConstructorArgumentValues resolvedValues, 
+            ObjectWrapper wrapper, 
+            Type[] paramTypes, 
+            MethodBase methodOrCtorInfo, 
+            bool autowiring, 
+            out UnsatisfiedDependencyExceptionData unsatisfiedDependencyExceptionData)
         {
-            string methodType = (methodOrCtorInfo is ConstructorInfo) ? "constructor" : "factory method";
+            string GetMethodType()
+            {
+                return methodOrCtorInfo is ConstructorInfo ? "constructor" : "factory method";                
+            }
+
             unsatisfiedDependencyExceptionData = null;
+            if (paramTypes.Length == 0)
+            {
+                return ArgumentsHolder.Empty;
+            }
 
             ArgumentsHolder args = new ArgumentsHolder(paramTypes.Length);
-            ISet usedValueHolders = new HybridSet();
-            IList autowiredObjectNames = new LinkedList();
-            bool resolveNecessary = false;
+            var usedValueHolders = new HybridSet();
+            List<string> autowiredObjectNames = null;
 
-            ParameterInfo[] argTypes = methodOrCtorInfo.GetParameters();
+            ParameterInfo[] argTypes =  methodOrCtorInfo.GetParameters();
 
             for (int paramIndex = 0; paramIndex < paramTypes.Length; paramIndex++)
             {
@@ -416,7 +418,6 @@ namespace Spring.Objects.Factory.Support
                 {
                     valueHolder = resolvedValues.GetArgumentValue(paramIndex, paramType, usedValueHolders);
                 }
-
 
                 if (valueHolder == null && !autowiring)
                 {
@@ -439,11 +440,8 @@ namespace Spring.Objects.Factory.Support
                     }
                     catch (TypeMismatchException ex)
                     {
-                        //To avoid using exceptions for flow control, this is not a cost in Java as stack trace is lazily created.
-                        string errorMessage = String.Format(CultureInfo.InvariantCulture,
-                                   "Could not convert {0} argument value [{1}] to required type [{2}] : {3}",
-                                   methodType, valueHolder.Value,
-                                   paramType, ex.Message);
+                        // to avoid using exceptions for flow control, this is not a cost in Java as stack trace is lazily created.
+                        string errorMessage = $"Could not convert {GetMethodType()} argument value [{valueHolder.Value}] to required type [{paramType}] : {ex.Message}";
                         unsatisfiedDependencyExceptionData = new UnsatisfiedDependencyExceptionData(paramIndex, paramType, errorMessage);
                         return null;
                     }
@@ -454,10 +452,8 @@ namespace Spring.Objects.Factory.Support
                     // have to fail creating an argument array for the given constructor.
                     if (!autowiring)
                     {
-                        string errorMessage = String.Format(CultureInfo.InvariantCulture,
-                                  "Ambiguous {0} argument types - " +
-                                  "Did you specify the correct object references as {0} arguments?",
-                                  methodType);
+                        string errorMessage = $"Ambiguous {GetMethodType()} argument types - " +
+                                              $"Did you specify the correct object references as {GetMethodType()} arguments?";
                         unsatisfiedDependencyExceptionData = new UnsatisfiedDependencyExceptionData(paramIndex, paramType, errorMessage);
 
                         return null;
@@ -465,11 +461,11 @@ namespace Spring.Objects.Factory.Support
                     try
                     {
                         MethodParameter param = MethodParameter.ForMethodOrConstructor(methodOrCtorInfo, paramIndex);
+                        autowiredObjectNames = new List<string>();
                         object autowiredArgument = ResolveAutoWiredArgument(param, objectName, autowiredObjectNames);
                         args.rawArguments[paramIndex] = autowiredArgument;
                         args.arguments[paramIndex] = autowiredArgument;
                         args.preparedArguments[paramIndex] = new AutowiredArgumentMarker();
-                        resolveNecessary = true;
                     }
                     catch (ObjectsException ex)
                     {
@@ -477,32 +473,35 @@ namespace Spring.Objects.Factory.Support
 
                         return null;
                     }
-
                 }
             }
-            foreach (string autowiredObjectName in autowiredObjectNames)
+
+            if (log.IsDebugEnabled && autowiredObjectNames != null)
             {
-                if (log.IsDebugEnabled)
+                for (var i = 0; i < autowiredObjectNames.Count; i++)
                 {
-                    log.Debug("Autowiring by type from object name '" + objectName +
-                         "' via " + methodType + " to object named '" + autowiredObjectName + "'");
+                    string autowiredObjectName = autowiredObjectNames[i];
+                    log.Debug(
+                        $"Autowiring by type from object name '{objectName}' via {GetMethodType()} to object named '{autowiredObjectName}'");
                 }
             }
-
 
             return args;
-
         }
 
         private class AutowiredArgumentMarker
         {
         }
 
-        private object ResolveAutoWiredArgument(MethodParameter methodParameter, string objectName, IList autowiredObjectNames)
+        private object ResolveAutoWiredArgument(
+            MethodParameter methodParameter,
+            string objectName, 
+            List<string> autowiredObjectNames)
         {
-            return
-                this.autowireFactory.ResolveDependency(new DependencyDescriptor(methodParameter, true), objectName,
-                                                       autowiredObjectNames);
+            return autowireFactory.ResolveDependency(
+                new DependencyDescriptor(methodParameter, true),
+                objectName,
+                autowiredObjectNames);
         }
 
         /// <summary>
@@ -543,50 +542,62 @@ namespace Spring.Objects.Factory.Support
 //            ObjectDefinitionValueResolver valueResolver = new ObjectDefinitionValueResolver(objectFactory);
             int minNrOfArgs = cargs.ArgumentCount;
 
-            foreach (KeyValuePair<int, ConstructorArgumentValues.ValueHolder> entry in cargs.IndexedArgumentValues)
+            if (cargs._indexedArgumentValues != null)
             {
-                int index = Convert.ToInt32(entry.Key);
-                if (index < 0)
+                foreach (var entry in cargs._indexedArgumentValues)
                 {
-                    throw new ObjectCreationException(definition.ResourceDescription, objectName,
-                                                      "Invalid constructor agrument index: " + index);
+                    int index = entry.Key;
+                    if (index < 0)
+                    {
+                        throw new ObjectCreationException(
+                            definition.ResourceDescription, 
+                            objectName,
+                            $"Invalid constructor argument index: {index}");
+                    }
+
+                    if (index > minNrOfArgs)
+                    {
+                        minNrOfArgs = index + 1;
+                    }
+
+                    ConstructorArgumentValues.ValueHolder valueHolder = entry.Value;
+                    string argName = "constructor argument with index " + index;
+                    object resolvedValue = valueResolver.ResolveValueIfNecessary(objectName, definition, argName, valueHolder.Value);
+                    resolvedValues.AddIndexedArgumentValue(index, resolvedValue,
+                        StringUtils.HasText(valueHolder.Type)
+                            ? TypeResolutionUtils.ResolveType(valueHolder.Type).AssemblyQualifiedName
+                            : null);
                 }
-                if (index > minNrOfArgs)
-                {
-                    minNrOfArgs = index + 1;
-                }
-                ConstructorArgumentValues.ValueHolder valueHolder = entry.Value;
-                string argName = "constructor argument with index " + index;
-                object resolvedValue =
-                    valueResolver.ResolveValueIfNecessary(objectName, definition, argName, valueHolder.Value);
-                resolvedValues.AddIndexedArgumentValue(index, resolvedValue,
-                                                       StringUtils.HasText(valueHolder.Type)
-                                                           ? TypeResolutionUtils.ResolveType(valueHolder.Type).
-                                                                 AssemblyQualifiedName
-                                                           : null);
             }
 
-            foreach (ConstructorArgumentValues.ValueHolder valueHolder in definition.ConstructorArgumentValues.GenericArgumentValues)
+            if (definition.ConstructorArgumentValues._genericArgumentValues != null)
             {
-                string argName = "constructor argument";
-                object resolvedValue =
-                    valueResolver.ResolveValueIfNecessary(objectName, definition, argName, valueHolder.Value);
-                resolvedValues.AddGenericArgumentValue(resolvedValue,
-                                                       StringUtils.HasText(valueHolder.Type)
-                                                           ? TypeResolutionUtils.ResolveType(valueHolder.Type).
-                                                                 AssemblyQualifiedName
-                                                           : null);
+                const string argName = "constructor argument";
+                for (var i = 0; i < definition.ConstructorArgumentValues._genericArgumentValues.Count; i++)
+                {
+                    var valueHolder = definition.ConstructorArgumentValues._genericArgumentValues[i];
+                    object resolvedValue = valueResolver.ResolveValueIfNecessary(objectName, definition, argName, valueHolder.Value);
+
+                    resolvedValues.AddGenericArgumentValue(
+                        resolvedValue,
+                        StringUtils.HasText(valueHolder.Type)
+                            ? TypeResolutionUtils.ResolveType(valueHolder.Type).AssemblyQualifiedName
+                            : null);
+                }
             }
-            foreach (KeyValuePair<string, object> namedArgumentEntry in definition.ConstructorArgumentValues.NamedArgumentValues)
+
+            if (definition.ConstructorArgumentValues._namedArgumentValues != null)
             {
-                string argumentName = namedArgumentEntry.Key;
-                string syntheticArgumentName = "constructor argument with name " + argumentName;
-                ConstructorArgumentValues.ValueHolder valueHolder =
-                    (ConstructorArgumentValues.ValueHolder)namedArgumentEntry.Value;
-                object resolvedValue =
-                    valueResolver.ResolveValueIfNecessary(objectName, definition, syntheticArgumentName, valueHolder.Value);
-                resolvedValues.AddNamedArgumentValue(argumentName, resolvedValue);
+                foreach (var entry in definition.ConstructorArgumentValues._namedArgumentValues)
+                {
+                    string argumentName = entry.Key;
+                    string syntheticArgumentName = "constructor argument with name " + argumentName;
+                    ConstructorArgumentValues.ValueHolder valueHolder = entry.Value;
+                    object resolvedValue = valueResolver.ResolveValueIfNecessary(objectName, definition, syntheticArgumentName, valueHolder.Value);
+                    resolvedValues.AddNamedArgumentValue(argumentName, resolvedValue);
+                }
             }
+
             return minNrOfArgs;
         }
 
@@ -621,25 +632,45 @@ namespace Spring.Objects.Factory.Support
             MemberInfo[] methods = searchType.FindMembers(MemberTypes.Method, methodFlags, new CriteriaMemberFilter().FilterMemberByCriteria, methodCriteria);
             return methods.Cast<MethodInfo>().ToArray();
         }
-        internal class ArgumentsHolder
-        {
-            public object[] rawArguments;
-            public object[] arguments;
-            public object[] preparedArguments;
 
+        private class ArgumentsHolder
+        {
+            internal static readonly ArgumentsHolder Empty = new ArgumentsHolder(0);
+
+            public readonly object[] rawArguments;
+            public readonly object[] arguments;
+            public readonly object[] preparedArguments;
 
             public ArgumentsHolder(int size)
             {
-                this.rawArguments = new object[size];
-                this.arguments = new object[size];
-                this.preparedArguments = new object[size];
+                rawArguments = size == 0 ? ObjectUtils.EmptyObjects : new object[size];
+                arguments = size == 0 ? ObjectUtils.EmptyObjects : new object[size];
+                preparedArguments = size == 0 ? ObjectUtils.EmptyObjects : new object[size];
             }
 
-            public ArgumentsHolder(object[] args)
+            private ArgumentsHolder(object[] args)
             {
-                this.rawArguments = args;
-                this.arguments = args;
-                this.preparedArguments = args;
+                rawArguments = args;
+                arguments = args;
+                preparedArguments = args;
+            }
+
+            public static ArgumentsHolder Create(object[] args)
+            {
+                if (args.Length == 0)
+                {
+                    return Empty;
+                }
+                return new ArgumentsHolder(args);
+            }
+            
+            public static ArgumentsHolder Create(int size)
+            {
+                if (size == 0)
+                {
+                    return Empty;
+                }
+                return new ArgumentsHolder(size);
             }
 
             public int GetTypeDifferenceWeight(Type[] paramTypes)
@@ -648,8 +679,8 @@ namespace Spring.Objects.Factory.Support
                 // Try type difference weight on both the converted arguments and
                 // the raw arguments. If the raw weight is better, use it.
                 // Decrease raw weight by 1024 to prefer it over equal converted weight.
-                int typeDiffWeight = AutowireUtils.GetTypeDifferenceWeight(paramTypes, this.arguments);
-                int rawTypeDiffWeight = AutowireUtils.GetTypeDifferenceWeight(paramTypes, this.rawArguments) - 1024;
+                int typeDiffWeight = AutowireUtils.GetTypeDifferenceWeight(paramTypes, arguments);
+                int rawTypeDiffWeight = AutowireUtils.GetTypeDifferenceWeight(paramTypes, rawArguments) - 1024;
                 return (rawTypeDiffWeight < typeDiffWeight ? rawTypeDiffWeight : typeDiffWeight);
             }
         }

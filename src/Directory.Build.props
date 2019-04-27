@@ -1,0 +1,63 @@
+<Project>
+
+  <PropertyGroup>
+
+    <OutputPath>..\..\..\build\$(Configuration)\$(MSBuildProjectName)</OutputPath>
+
+    <RootNamespace>Spring</RootNamespace>
+
+    <AssemblyOriginatorKeyFile>..\..\..\Spring.Net.snk</AssemblyOriginatorKeyFile>
+
+    <DelaySign>false</DelaySign>
+    <Deterministic>true</Deterministic>
+
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+
+    <CommonLoggingVersion>3.4.1</CommonLoggingVersion>
+
+    <Authors>SpringSource</Authors>
+    <PackageIconUrl>http://springframework.net/images/SpringSource_Leaves32x32.png</PackageIconUrl>
+    <PackageLicenseUrl>http://www.springframework.net/license.html</PackageLicenseUrl>
+    <PackageProjectUrl>http://www.springframework.net/</PackageProjectUrl>
+    <PackageTags>Library</PackageTags>
+
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <WarningsAsErrors>True</WarningsAsErrors>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+
+    <ComVisible>False</ComVisible>
+
+    <DebugSymbols>True</DebugSymbols>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+
+    <LangVersion>latest</LangVersion>
+    <TargetFullFrameworkVersion>net452</TargetFullFrameworkVersion>
+
+  </PropertyGroup>
+  
+  <ItemGroup Condition="'$(SourceLinkEnabled)' != 'false'">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="All"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="ConfigureAwaitChecker.Analyzer" Version="2.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+	<DebugType>Full</DebugType>
+    <DefineConstants>DEBUG;TRACE;DEBUG_DYNAMIC;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+</Project>

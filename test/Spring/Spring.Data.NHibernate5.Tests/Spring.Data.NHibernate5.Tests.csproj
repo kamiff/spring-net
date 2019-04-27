@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Spring.Data.Tests\Spring.Data.Tests.csproj" />
+    <ProjectReference Include="..\..\..\src\Spring\Spring.Aop\Spring.Aop.csproj" />
+    <ProjectReference Include="..\..\..\src\Spring\Spring.Core\Spring.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Spring\Spring.Data.NHibernate5\Spring.Data.NHibernate5.csproj" />
+    <ProjectReference Include="..\..\..\src\Spring\Spring.Data\Spring.Data.csproj" />
+    <ProjectReference Include="..\..\..\src\Spring\Spring.Testing.NUnit\Spring.Testing.NUnit.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(TargetFullFrameworkVersion)' ">
+    <Reference Include="System.Data.OracleClient" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FakeItEasy" Version="$(FakeItEasyVersion)" />
+    <PackageReference Include="FakeItEasy.Analyzer" Version="$(FakeItEasyVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestSDKVersion)" />
+    <PackageReference Include="NUnit" Version="$(NUnitVersion)" />
+    <PackageReference Include="NUnit3TestAdapter" Version="$(NUnitTestAdapterVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Remove="Data\OracleAdoTemplateTests.cs" Condition=" '$(TargetFramework)' != '$(TargetFullFrameworkVersion)' " />
+    <Compile Remove="Data\SQLiteTests.cs" Condition=" '$(TargetFramework)' != '$(TargetFullFrameworkVersion)' " />
+    <EmbeddedResource Include="Data\NHibernate\Config\AopConfiguration.xml" />
+    <EmbeddedResource Include="Data\NHibernate\Config\AopConfigurationTxPointcut.xml" />
+    <EmbeddedResource Include="Data\NHibernate\TestObject.hbm.xml" />
+  </ItemGroup>
+</Project>

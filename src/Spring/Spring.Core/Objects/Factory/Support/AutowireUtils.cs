@@ -1,7 +1,5 @@
-#region License
-
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +14,6 @@
  * limitations under the License.
  */
 
-#endregion
-
-#region Imports
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,8 +25,6 @@ using Spring.Objects.Factory.Attributes;
 using Spring.Objects.Factory.Config;
 using Spring.Util;
 
-#endregion
-
 namespace Spring.Objects.Factory.Support
 {
 	/// <summary>
@@ -43,9 +35,7 @@ namespace Spring.Objects.Factory.Support
 	/// <author>Rick Evans (.NET)</author>
 	public sealed class AutowireUtils
 	{
-		#region Constructor (s) / Destructor
-
-		// CLOVER:OFF
+	    // CLOVER:OFF
 
 		/// <summary>
 		/// Creates a new instance of the AutowireUtils class.
@@ -62,9 +52,7 @@ namespace Spring.Objects.Factory.Support
 
 		// CLOVER:ON
 
-		#endregion
-
-		/// <summary>
+	    /// <summary>
 		/// Gets those <see cref="System.Reflection.ConstructorInfo"/>s
 		/// that are applicable for autowiring the supplied <paramref name="definition"/>.
 		/// </summary>
@@ -84,25 +72,38 @@ namespace Spring.Objects.Factory.Support
 		/// </returns>
 		public static ConstructorInfo[] GetConstructors(
 			IObjectDefinition definition, int minimumArgumentCount)
-		{
+	    {
+		    var rootObjectDefinition = definition as RootObjectDefinition;
+		    if (minimumArgumentCount == 0 && rootObjectDefinition?.defaultConstructor != null)
+		    {
+			    return rootObjectDefinition.defaultConstructor;
+		    }
+			
 			const BindingFlags flags =
-					  BindingFlags.Public | BindingFlags.NonPublic
-					  | BindingFlags.Instance | BindingFlags.DeclaredOnly;
-			ConstructorInfo[] constructors = null;
+					  BindingFlags.Public
+					  | BindingFlags.NonPublic
+					  | BindingFlags.Instance 
+					  | BindingFlags.DeclaredOnly;
+		    
+			ConstructorInfo[] constructors;
 			if (minimumArgumentCount > 0)
 			{
 				MemberInfo[] ctors = definition.ObjectType.FindMembers(
 					MemberTypes.Constructor,
 					flags,
-					new MemberFilter(new CriteriaMemberFilter().FilterMemberByCriteria),
+					new CriteriaMemberFilter().FilterMemberByCriteria,
 					new MinimumArgumentCountCriteria(minimumArgumentCount));
 				constructors = (ConstructorInfo[]) ArrayList.Adapter(ctors).ToArray(typeof (ConstructorInfo));
 			}
 			else
 			{
 				constructors = definition.ObjectType.GetConstructors(flags);
+				if (rootObjectDefinition != null)
+				{
+					rootObjectDefinition.defaultConstructor = constructors;
+				}
 			}
-			AutowireUtils.SortConstructors(constructors);
+			SortConstructors(constructors);
 			return constructors;
 		}
 
@@ -147,10 +148,9 @@ namespace Spring.Objects.Factory.Support
 				Type theParameterType = argTypes[i].ParameterType;
 				if (!ObjectUtils.IsAssignable(theParameterType, args[i]))
 				{
-					return Int32.MaxValue;
+					return int.MaxValue;
 				}
-				if (args[i] != null
-					&& !(args[i].GetType().Equals(theParameterType)))
+				if (args[i] != null && args[i].GetType() != theParameterType)
 				{
 					Type superType = args[i].GetType().BaseType;
 					while (superType != null)
@@ -193,11 +193,11 @@ namespace Spring.Objects.Factory.Support
         public static int GetTypeDifferenceWeight(Type[] paramTypes, object[] args)
         {
             int result = 0;
-            for (int i = 0; i < paramTypes.Length; i++)
+            for (int i = 0; i < (uint) paramTypes.Length; i++)
             {
                 if (!ObjectUtils.IsAssignable(paramTypes[i], args[i]))
                 {
-                    return Int32.MaxValue;
+                    return int.MaxValue;
                 }
                 if (args[i] != null)
                 {
@@ -205,7 +205,7 @@ namespace Spring.Objects.Factory.Support
                     Type superType = args[i].GetType().BaseType;
                     while (superType != null)
                     {
-                        if (paramType.Equals(superType))
+                        if (paramType == superType)
                         {
                             result = result + 2;
                             superType = null;
@@ -238,7 +238,7 @@ namespace Spring.Objects.Factory.Support
         /// </returns>
         public static Boolean IsExcludedFromDependencyCheck(PropertyInfo pi)
         {
-            return (pi.GetSetMethod() == null) ? false : true;
+            return pi.GetSetMethod() != null;
         }
 
 		/// <summary>
@@ -257,17 +257,16 @@ namespace Spring.Objects.Factory.Support
 		/// </param>
 		public static void SortConstructors(ConstructorInfo[] constructors)
 		{
-			if (constructors != null
-				&& constructors.Length > 0)
+			if (constructors != null && constructors.Length > 1)
 			{
-				Array.Sort(constructors, new ConstructorComparer());
+				Array.Sort(constructors, ConstructorComparer.Instance);
 			}
 		}
 
-		#region Inner Class : ConstructorComparer
-
-		private sealed class ConstructorComparer : IComparer
-		{
+	    private sealed class ConstructorComparer : IComparer
+	    {
+		    internal static readonly ConstructorComparer Instance = new ConstructorComparer();
+			
 			public int Compare(object lhs, object rhs)
 			{
 				ConstructorInfo lhsCtor = (ConstructorInfo) lhs;
@@ -294,12 +293,10 @@ namespace Spring.Objects.Factory.Support
 			}
 		}
 
-		#endregion
-
-		#region Inner Class : MinimumArgumentCountCriteria
-
-		private sealed class MinimumArgumentCountCriteria : ICriteria
+	    private sealed class MinimumArgumentCountCriteria : ICriteria
 		{
+			private readonly int _minimumArgumentCount;
+
 			public MinimumArgumentCountCriteria(int minimumArgumentCount)
 			{
 				_minimumArgumentCount = minimumArgumentCount;
@@ -307,17 +304,11 @@ namespace Spring.Objects.Factory.Support
 
 			public bool IsSatisfied(object datum)
 			{
-				bool satisfied = false;
-				satisfied = ((MethodBase) datum).GetParameters().Length >= _minimumArgumentCount;
-				return satisfied;
+				return ((MethodBase) datum).GetParameters().Length >= _minimumArgumentCount;
 			}
-
-			private int _minimumArgumentCount;
 		}
 
-		#endregion
-
-        /// <summary>
+	    /// <summary>
         /// Determines whether the setter property is defined in any of the given interfaces.
         /// </summary>
         /// <param name="propertyInfo">The PropertyInfo of the object property</param>

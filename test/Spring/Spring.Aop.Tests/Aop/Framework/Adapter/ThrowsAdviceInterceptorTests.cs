@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright Â© 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,18 @@
 
 #endregion
 
-#region Imports
-
 using System;
 using System.Reflection;
 using System.Runtime.Remoting;
 using System.Web;
-using AopAlliance.Intercept;
-using NUnit.Framework;
-using Rhino.Mocks;
-using Spring.Util;
 
-#endregion
+using AopAlliance.Intercept;
+
+using FakeItEasy;
+
+using NUnit.Framework;
+
+using Spring.Util;
 
 namespace Spring.Aop.Framework.Adapter
 {
@@ -39,7 +39,7 @@ namespace Spring.Aop.Framework.Adapter
 	/// <author>Rod Johnson</author>
 	/// <author>Simon White (.NET)</author>
 	[TestFixture]
-	public sealed class ThrowsAdviceInterceptorTests
+	public sealed partial class ThrowsAdviceInterceptorTests
 	{
 		[Test]
 		public void NoHandlerMethods()
@@ -56,21 +56,16 @@ namespace Spring.Aop.Framework.Adapter
 		[Test]
 		public void NotInvoked()
 		{
-            MockRepository repository = new MockRepository();
-		    IMethodInvocation mi = (IMethodInvocation) repository.CreateMock(typeof (IMethodInvocation));
+		    IMethodInvocation mi = A.Fake<IMethodInvocation>();
             
             MyThrowsHandler th = new MyThrowsHandler();
             ThrowsAdviceInterceptor ti = new ThrowsAdviceInterceptor(th);
             object ret = new object();
 
-		    Expect.Call(mi.Proceed()).Return(ret);
-            repository.ReplayAll();
+		    A.CallTo(() => mi.Proceed()).Returns(ret);
+
             Assert.AreEqual(ret, ti.Invoke(mi));
             Assert.AreEqual(0, th.GetCalls());
-            repository.VerifyAll();
-
-            
-
 		}
 
 		[Test]
@@ -81,10 +76,9 @@ namespace Spring.Aop.Framework.Adapter
             Assert.AreEqual(2, ti.HandlerMethodCount);
             Exception ex = new Exception();
 
-            MockRepository repository = new MockRepository();
-            IMethodInvocation mi = (IMethodInvocation)repository.CreateMock(typeof(IMethodInvocation));
-		    Expect.Call(mi.Proceed()).Throw(ex);
-            repository.ReplayAll();
+            IMethodInvocation mi = A.Fake<IMethodInvocation>();
+            A.CallTo(() => mi.Proceed()).Throws(ex);
+
             try
             {
                 ti.Invoke(mi);
@@ -95,8 +89,6 @@ namespace Spring.Aop.Framework.Adapter
                 Assert.AreEqual(ex, caught);
             }
             Assert.AreEqual(0, th.GetCalls());
-            repository.VerifyAll();
-
 		}
 
 		[Test]
@@ -107,14 +99,13 @@ namespace Spring.Aop.Framework.Adapter
             ThrowsAdviceInterceptor ti = new ThrowsAdviceInterceptor(th);
             HttpException ex = new HttpException();
 
-            MockRepository repository = new MockRepository();
-            IMethodInvocation mi = (IMethodInvocation)repository.CreateMock(typeof(IMethodInvocation));
+		    IMethodInvocation mi = A.Fake<IMethodInvocation>();
 
-		    Expect.Call(mi.Method).Return(ReflectionUtils.GetMethod(typeof (object), "HashCode", new Type[] {}));
-		    Expect.Call(mi.Arguments).Return(null);
-		    Expect.Call(mi.This).Return(new object());
-            Expect.Call(mi.Proceed()).Throw(ex);
-            repository.ReplayAll();
+            A.CallTo(() => mi.Method).Returns(ReflectionUtils.GetMethod(typeof (object), "HashCode", new Type[] {}));
+		    A.CallTo(() => mi.Arguments).Returns(null);
+		    A.CallTo(() => mi.This).Returns(new object());
+		    A.CallTo(() => mi.Proceed()).Throws(ex);
+
             try
             {
                 ti.Invoke(mi);
@@ -126,9 +117,6 @@ namespace Spring.Aop.Framework.Adapter
             }
             Assert.AreEqual(1, th.GetCalls());
             Assert.AreEqual(1, th.GetCalls("HttpException"));
-
-            repository.VerifyAll();
-
         }
 
         [Test]
@@ -138,10 +126,10 @@ namespace Spring.Aop.Framework.Adapter
             ThrowsAdviceInterceptor throwsInterceptor = new ThrowsAdviceInterceptor(throwsHandler);
             // nest the exceptions; make sure the advice gets applied because of the inner exception...
             Exception exception = new FormatException("Parent", new HttpException("Inner"));
-            MockRepository repository = new MockRepository();
-            IMethodInvocation invocation = (IMethodInvocation)repository.CreateMock(typeof(IMethodInvocation));
-            Expect.Call(invocation.Proceed()).Throw(exception);
-            repository.ReplayAll();
+
+            IMethodInvocation invocation = A.Fake<IMethodInvocation>();
+            A.CallTo(() => invocation.Proceed()).Throws(exception);
+
             try
             {
                 throwsInterceptor.Invoke(invocation);
@@ -157,8 +145,7 @@ namespace Spring.Aop.Framework.Adapter
             Assert.AreEqual(0, throwsHandler.GetCalls("HttpException"),
                 "Similarly, must NOT have been handled, 'cos the HttpException was wrapped by " +
                 "another Exception that did not have a handler.");
-            repository.VerifyAll();
-        }
+         }
 
 	    [Test]
 	    public void ChokesOnHandlerWhereMultipleMethodsAreApplicable()
@@ -175,10 +162,9 @@ namespace Spring.Aop.Framework.Adapter
             // Extends RemotingException
             RemotingTimeoutException ex = new RemotingTimeoutException();
 
-            MockRepository repository = new MockRepository();
-            IMethodInvocation mi = (IMethodInvocation)repository.CreateMock(typeof(IMethodInvocation));
-		    Expect.Call(mi.Proceed()).Throw(ex);
-            repository.ReplayAll();
+		    IMethodInvocation mi = A.Fake<IMethodInvocation>();
+		    A.CallTo(() => mi.Proceed()).Throws(ex);
+
             try
             {
                 ti.Invoke(mi);
@@ -190,8 +176,6 @@ namespace Spring.Aop.Framework.Adapter
             }
             Assert.AreEqual(1, th.GetCalls());
             Assert.AreEqual(1, th.GetCalls("RemotingException"));
-
-            repository.VerifyAll();
 		}
 
 		[Test]
@@ -200,13 +184,10 @@ namespace Spring.Aop.Framework.Adapter
             Exception exception = new Exception();
             MyThrowsHandler handler = new ThrowingMyHandler(exception);
             ThrowsAdviceInterceptor interceptor = new ThrowsAdviceInterceptor(handler);
-            // extends RemotingException...
-            RemotingTimeoutException ex = new RemotingTimeoutException();
 
-            MockRepository repository = new MockRepository();
-            IMethodInvocation mi = (IMethodInvocation)repository.CreateMock(typeof(IMethodInvocation));
-		    Expect.Call(mi.Proceed()).Throw(ex);
-            repository.ReplayAll();
+			IMethodInvocation mi = A.Fake<IMethodInvocation>();
+			A.CallTo(() => mi.Proceed()).Throws(new RemotingTimeoutException());
+
             try
             {
                 interceptor.Invoke(mi);
@@ -217,88 +198,82 @@ namespace Spring.Aop.Framework.Adapter
                 Assert.AreEqual(exception, caught);
             }
             Assert.AreEqual(1, handler.GetCalls());
-            Assert.AreEqual(1, handler.GetCalls("RemotingException"));
-            repository.VerifyAll();
-
+			Assert.AreEqual(1, handler.GetCalls("RemotingException"));
 		}
 
-        #region Helper Classes
+		private sealed class MultipleMethodsAreApplicableThrowsHandler
+		{
+			public void AfterThrowing(MethodInfo method, object[] args, object target, RemotingException ex)
+			{
+			}
 
-        private sealed class MultipleMethodsAreApplicableThrowsHandler
-        {
-            public void AfterThrowing(
-                MethodInfo method, object[] args, object target, RemotingException ex)
-            {
-            }
+			public void AfterThrowing(RemotingException ex)
+			{
+			}
+		}
 
-            public void AfterThrowing(RemotingException ex)
-            {
-            }
-        }
+		private class ThrowingMyHandler : MyThrowsHandler
+		{
+			private Exception exception;
 
-	    private class ThrowingMyHandler : MyThrowsHandler
-	    {
-	        private Exception exception;
+			public ThrowingMyHandler(Exception ex)
+			{
+				this.exception = ex;
+			}
 
-	        public ThrowingMyHandler(Exception ex)
-	        {
-	            this.exception = ex;
-	        }
+			public override void AfterThrowing(RemotingException ex)
+			{
+				base.AfterThrowing(ex);
+				throw exception;
+			}
+		}
 
-	        public override void AfterThrowing(RemotingException ex)
-	        {
-	            base.AfterThrowing(ex);
-	            throw exception;
-	        }
-	    }
+		public class MyThrowsHandler : MethodCounter, IThrowsAdvice
+		{
+			public void AfterThrowing(
+				MethodInfo m, object[] args, object target, HttpException ex)
+			{
+				Count("HttpException");
+			}
 
-	    public class MyThrowsHandler : MethodCounter, IThrowsAdvice
-	    {
-	        public void AfterThrowing(
-	            MethodInfo m, object[] args, object target, HttpException ex)
-	        {
-	            Count("HttpException");
-	        }
+			public virtual void AfterThrowing(RemotingException ex)
+			{
+				Count("RemotingException");
+			}
 
-	        public virtual void AfterThrowing(RemotingException ex)
-	        {
-	            Count("RemotingException");
-	        }
+			// not valid, wrong number of arguments...
+			public void AfterThrowing(MethodInfo m, Exception ex)
+			{
+				throw new NotSupportedException("Shouldn't be called");
+			}
+		}
+		
+		public interface IEcho
+		{
+			int A { get; set; }
 
-	        // not valid, wrong number of arguments...
-	        public void AfterThrowing(MethodInfo m, Exception ex)
-	        {
-	            throw new NotSupportedException("Shouldn't be called");
-	        }
-	    }
+			int EchoException(int i, Exception t);
+		}
 
-	    public interface IEcho
-	    {
-	        int A { get; set; }
+		public class Echo : IEcho
+		{
+			private int a;
 
-	        int EchoException(int i, Exception t);
-	    }
+			public int A
+			{
+				get { return a; }
+				set { a = value; }
+			}
 
-	    public class Echo : IEcho
-	    {
-	        private int a;
+			public virtual int EchoException(int i, Exception ex)
+			{
+				if (ex != null)
+				{
+					throw ex;
+				}
+				return i;
+			}
+		}
 
-	        public int A
-	        {
-	            get { return a; }
-	            set { a = value; }
-	        }
-
-	        public virtual int EchoException(int i, Exception ex)
-	        {
-	            if (ex != null)
-	            {
-	                throw ex;
-	            }
-	            return i;
-	        }
-	    }
-
-	    #endregion
 	}
 }
