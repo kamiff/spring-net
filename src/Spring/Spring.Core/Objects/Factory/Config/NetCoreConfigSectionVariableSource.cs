@@ -38,6 +38,8 @@ namespace Spring.Objects.Factory.Config
         /// </summary>
         public NetCoreConfigSectionVariableSource(string sectionName, IConfiguration configuration)
         {
+            AssertUtils.ArgumentHasText(sectionName, "sectionName");
+            AssertUtils.ArgumentNotNull(configuration, "configuration");
             this.sectionName = sectionName;
             this.configurationSection = configuration.GetSection(sectionName);
         }

@@ -99,6 +99,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spring.Benchmark", "test\Sp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{9537C677-ADE5-4503-AFD7-3E0C3B0960EB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spring.Web.NetCore", "src\Spring\Spring.Web.NetCore\Spring.Web.NetCore\Spring.Web.NetCore.csproj", "{611465F8-85CA-460D-9976-C3BCC9603861}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|.NET = Debug|.NET
@@ -527,6 +529,18 @@ Global
 		{504F1D7B-C6AC-4128-9411-D680B3086662}.Release|Any CPU.Build.0 = Release|Any CPU
 		{504F1D7B-C6AC-4128-9411-D680B3086662}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{504F1D7B-C6AC-4128-9411-D680B3086662}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Debug|.NET.Build.0 = Debug|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Release|.NET.ActiveCfg = Release|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Release|.NET.Build.0 = Release|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Release|Any CPU.Build.0 = Release|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{611465F8-85CA-460D-9976-C3BCC9603861}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -535,8 +549,8 @@ Global
 		{504F1D7B-C6AC-4128-9411-D680B3086662} = {9537C677-ADE5-4503-AFD7-3E0C3B0960EB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {803E6B42-7DEE-4DCC-83D0-51925047BCB0}
 		NAntAddinLastFileName = Spring.build
+		SolutionGuid = {803E6B42-7DEE-4DCC-83D0-51925047BCB0}
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Spring.Net.vsmdi
