@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright ?2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -804,7 +804,7 @@ namespace Spring.Web.Services
                         return operationBinding;
                     }
                 }
-                throw new ApplicationException(String.Format("No OperationBinding matches the Operation '{0}' in the WSDL document located at '{2}'.", operation.Name, this.serviceUri.Description));
+                throw new ApplicationException(String.Format("No OperationBinding matches the Operation '{0}' in the WSDL document located at '{1}'.", operation.Name, this.serviceUri.Description));
             }
 
             /// <summary>

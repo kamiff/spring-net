@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;$(TargetFullFrameworkVersion)</TargetFrameworks>
+    <!--<TargetFrameworks>netcoreapp2.1</TargetFrameworks>-->
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Spring\Spring.Aop\Spring.Aop.csproj" />
@@ -45,6 +46,9 @@
     <Content Include="App.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Data\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -62,11 +66,20 @@
     <EmbeddedResource Include="Objects\Factory\Attributes\*.config" />
     <EmbeddedResource Include="Objects\Factory\Xml\*.xsd" />
     <EmbeddedResource Include="Validation\*.xml" />
+    <None Remove="appsettings.json" />
     <EmbeddedResource Include="Util\ConfigXmlDocumentTests_SampleConfig.xml" />
     <EmbeddedResource Include="Objects\Factory\TestResource.txt" />
     <EmbeddedResource Include="Reflection\Dynamic\SafePropertyTests_TestObject.vb" />
     <EmbeddedResource Include="Resources\SimpleAppContext.xml" />
     <EmbeddedResource Include="TestResource.txt" />
+  </ItemGroup>
+  <ItemGroup >
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions">
+      <Version>2.2.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json">
+      <Version>2.2.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy &quot;$(ProjectDir)Data&quot; &quot;$(OutDir)&quot; /y /s /q /d" />

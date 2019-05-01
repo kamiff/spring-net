@@ -29,7 +29,8 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
     <LangVersion>latest</LangVersion>
-    <TargetFullFrameworkVersion>net452</TargetFullFrameworkVersion>
+    <!--<TargetFullFrameworkVersion>net452</TargetFullFrameworkVersion>-->
+    <TargetFullFrameworkVersion>net461</TargetFullFrameworkVersion>
 
   </PropertyGroup>
 
