@@ -75,10 +75,6 @@ namespace Spring.Context.Support
         /// Name of the .Net config section that contains Spring.Net context definition.
         /// </summary>
         public const string ContextSectionName = "spring/context";
-        /// <summary>
-        /// Name of the .Net Core appsettings.json section that contains Spring.Net context definition.
-        /// </summary>
-        public const string ContextSectionNameForNetCore = "SpringContext";
 
         /// <summary>
         /// Default name of the root context.

@@ -8,29 +8,26 @@ namespace Spring.Data.NHibernate.Support
     /// <summary>
     /// 
     /// </summary>
-    public class OpenSessionInViewMiddleware : SessionScope
+    public class OpenSessionInViewMiddleware : SessionScope, IMiddleware
     {
-        private readonly RequestDelegate _next;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="next"></param>
         /// <param name="configuration"></param>
         /// <param name="configSection"></param>
-        public OpenSessionInViewMiddleware(RequestDelegate next, IConfiguration configuration, string configSection = "openSessionInView") : base(new NetCoreConfigSectionSessionScopeSettings(configSection, configuration), false)
+        public OpenSessionInViewMiddleware(IConfiguration configuration, string configSection = "openSessionInView") : base(new NetCoreConfigSectionSessionScopeSettings(configSection, configuration), false)
         {
-            _next = next;
+
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             // Do something with context near the beginning of request processing.
             try
             {
                 this.Open();
-#pragma warning disable ConfigureAwaitChecker // CAC001
-                await _next(context);
-#pragma warning restore ConfigureAwaitChecker // CAC001
+                return next(context);
             }
             finally
             {
