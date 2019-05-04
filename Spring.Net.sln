@@ -99,7 +99,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spring.Benchmark", "test\Sp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{9537C677-ADE5-4503-AFD7-3E0C3B0960EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spring.Web.NetCore", "src\Spring\Spring.Web.NetCore\Spring.Web.NetCore\Spring.Web.NetCore.csproj", "{611465F8-85CA-460D-9976-C3BCC9603861}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spring.Web.NetCore", "src\Spring\Spring.Web.NetCore\Spring.Web.NetCore.csproj", "{611465F8-85CA-460D-9976-C3BCC9603861}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
