@@ -171,10 +171,10 @@ Commandline Examples:
   <sysinfo failonerror="false" />
 
   <property name="project.company" value="SpringSource"/>
-  <property name="project.copyright" value="Copyright 2002-2018 Spring.NET Framework Team."/>
+  <property name="project.copyright" value="Copyright 2002-2019 Spring.NET Framework Team."/>
 
   <property name="key.file" value="Spring.Net.snk"/>
-  <property name="project.year" value="2018"/>
+  <property name="project.year" value="2019"/>
 
   <!-- Targets that are always executed -->
   <call target="set-build-configuration"/>
