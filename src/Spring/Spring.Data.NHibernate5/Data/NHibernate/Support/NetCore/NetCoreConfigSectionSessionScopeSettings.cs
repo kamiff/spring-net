@@ -22,7 +22,22 @@ namespace Spring.Data.NHibernate.Support
 
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sessionFactory"></param>
+        public NetCoreConfigSectionSessionScopeSettings(ISessionFactory sessionFactory) : base(sessionFactory)
+        { }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sessionFactory"></param>
+        /// <param name="entityInterceptor"></param>
+        /// <param name="singleSession"></param>
+        /// <param name="defaultFlushMode"></param>
+        public NetCoreConfigSectionSessionScopeSettings(ISessionFactory sessionFactory, IInterceptor entityInterceptor, bool singleSession, FlushMode defaultFlushMode) : base(sessionFactory, entityInterceptor, singleSession, defaultFlushMode)
+        { }
         /// <summary>
         /// Initializes a new <see cref="NetCoreConfigSectionSessionScopeSettings"/> instance.
         /// </summary>

@@ -49,7 +49,7 @@ namespace Spring.Context.Support
                     ((IConfigurableApplicationContext)springContext).ObjectFactory.RegisterSingleton(netCoreConfigObjectName, configuration);
                 }
             }
-            services.AddSingleton<IApplicationContext>((IServiceProvider sp) => { return springContext; });
+            services.AddSingleton(springContext);
             return services;
         }
     }
