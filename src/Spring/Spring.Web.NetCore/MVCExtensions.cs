@@ -9,6 +9,9 @@ using System.Linq;
 
 namespace Spring.Web.NetCore
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class MVCExtensions
     {
         /// <summary>

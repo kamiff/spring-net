@@ -32,8 +32,12 @@
 	<property name="msbuild.exe" value="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\bin\MsBuild.exe" />
 	<echo message="Switching to installed MSBuild at location ${msbuild.exe}" />
   </if>
+  <if test="${file::exists('C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\bin\MsBuild.exe')}">
+	<property name="msbuild.exe" value="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\bin\MsBuild.exe" />
+	<echo message="Switching to installed MSBuild at location ${msbuild.exe}" />
+  </if>
   
-  <echo message="msbuild.exe:         '${msbuild.exe}'"/>
+  <echo message="msbuild.exe:'${msbuild.exe}'"/>
 
   
   <!-- default location of mstest executable and reference assemblies -->

@@ -37,4 +37,7 @@
     <Compile Remove="Data\Support\IServiceDomainAdapter.cs" />
     <Compile Remove="Data\Support\SimpleServiceConfig.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+  </ItemGroup>
 </Project>

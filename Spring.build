@@ -335,6 +335,8 @@ Commandline Examples:
           <exclude name="examples/**/Spring.EmsQuickStart/*" />
           <exclude name="examples/**/Spring.Examples.Pool/*" />
           <exclude name="examples/**/SpringAir/*" />
+          <exclude name="examples/**/Spring.WebQuickStart/*" />
+          <exclude name="examples/**/Spring.Scheduling.Quartz.Example/*" />
         </items>
       </in>
       <do>
@@ -474,8 +476,8 @@ Commandline Examples:
       <arg line='/property:Platform="Any CPU"'/>
     </exec>
 	
-	<call target="copylibs" />
-    <call target="compile-test" />
+	  <call target="copylibs" />
+    <!--<call target="compile-test" />-->
   </target>  
   
   <target name="compile-mono-2.0" description="Builds MONO Framework 2.0 version"
@@ -646,7 +648,7 @@ Commandline Examples:
 
 
     <call target="package-release-files"/>
-	<call target="package-nuget" />
+	  <call target="package-nuget" />
 
   </target>
 

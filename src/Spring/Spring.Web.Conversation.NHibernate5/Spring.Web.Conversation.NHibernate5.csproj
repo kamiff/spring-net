@@ -17,4 +17,7 @@
     </Compile>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+  </ItemGroup>
 </Project>

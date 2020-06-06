@@ -17,6 +17,7 @@ Rebuilding Solutions using Nant and "solutions.build":
 5) SpringAir.2003 unfort. doesn't work with this script :-(( - You need to check it manually (I'm working on it...)
 
 -->
+<!--RebuildAllSolutions-->
 <project name="Spring.NET Examples" default="RebuildAllSolutions">
 
   <property name="root.dir" value="${project::get-base-directory()}\.." overwrite="false" />
@@ -27,11 +28,14 @@ Rebuilding Solutions using Nant and "solutions.build":
       <in>
         <items basedir="${root.dir}">
           <include name="*.sln" />
+          <!--
           <include name="examples/**/*.sln" />
           <exclude name="examples/**/Spring.EmsQuickStart/*" />
           <exclude name="examples/**/Spring.Examples.Pool/*" />
           <exclude name="examples/**/SpringAir/*" />
           <exclude name="examples/**/Spring.WebQuickStart/*" />
+          <exclude name="examples/**/Spring.Scheduling.Quartz.Example/*" />
+          -->
         </items>
       </in>
       <do>

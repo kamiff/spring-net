@@ -19,4 +19,7 @@
     </None>
     <EmbeddedResource Include="Aop\Config\spring-aop-1.1.xsd" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+  </ItemGroup>
 </Project>

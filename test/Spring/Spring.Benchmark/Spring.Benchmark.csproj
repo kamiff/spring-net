@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>net471;netcoreapp2.1</TargetFrameworks>
+        <TargetFrameworks>$(TargetFullFrameworkVersion);netcoreapp2.1</TargetFrameworks>
         <RootNamespace>Spring.Benchmark</RootNamespace>
     </PropertyGroup>
 
