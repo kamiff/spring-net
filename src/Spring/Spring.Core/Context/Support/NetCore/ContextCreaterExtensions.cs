@@ -14,10 +14,6 @@ namespace Spring.Context.Support
     public static class ContextCreaterExtensions
     {
         /// <summary>
-        /// Default config section name in appsettings.json
-        /// </summary>
-        private const string CONFIG_SECTION_NAME = "springContext";
-        /// <summary>
         /// The object name by the net core system configuration object
         /// <see cref="IConfiguration"/>
         /// </summary>

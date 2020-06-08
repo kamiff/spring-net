@@ -28,10 +28,10 @@ using NUnit.Framework;
 
 namespace Spring.Objects.Factory.Config
 {
-	/// <summary>
+    /// <summary>
     /// Unit tests for the ConfigSectionVariableSource class.
     /// </summary>
-    /// <author>Aleksandar Seovic</author>
+    /// <author>Kamiff Lee</author>
     [TestFixture]
     public sealed class NetCoreConfigSectionVariableSourceTests
     {
@@ -49,12 +49,30 @@ namespace Spring.Objects.Factory.Config
             // existing vars
             Assert.AreEqual("1000", vs.ResolveVariable("maxResults"));
             Assert.AreEqual("1000", vs.ResolveVariable("MAXResults"));
-
+            Assert.AreEqual("10", vs.ResolveVariable("Cache.ExpiredMinutes"));
+            
             // non-existant variable
             Assert.IsNull(vs.ResolveVariable("dummy"));
         }
 
-        
+        [Test]
+        public void TestConnectionStringsResolutionWithSingleSection()
+        {
+            //ReloadOnChange = true 当appsettings.json被修改时重新加载            
+            var config = new ConfigurationBuilder()
+            .Add(new JsonConfigurationSource { Path = "appsettings.json", ReloadOnChange = true })
+            .Build();
+
+            NetCoreConnectionStringsVariableSource vs = new NetCoreConnectionStringsVariableSource(config);
+
+
+            // existing vars
+            Assert.AreEqual("Server=(localdb)\\MSSQLLocalDB;Database=_CHANGE_ME;Trusted_Connection=True;", vs.ResolveVariable("Default.connectionString"));
+            Assert.AreEqual("System.Data.MySqlClient", vs.ResolveVariable("Default.providerName"));
+            Assert.AreEqual("System.Data.SqlClient", vs.ResolveVariable("Prd.providerName"));
+
+            
+        }
 
         [Test]
         public void TestVariableResolutionFromApplicationSettingsSchema()

@@ -180,7 +180,7 @@ namespace Spring.Context.Support
                 IList<string> resources = GetResources(section);
 
                 // finally create the context instance
-                context = InstantiateContext(parentContext, configContext, contextName, contextType, caseSensitive, resources);
+                context = InstantiateContext(parentContext, contextName, contextType, caseSensitive, resources);
                 // and register with global context registry
                 if (AutoRegisterWithContextRegistry && !ContextRegistry.IsContextRegistered(context.Name))
                 {
@@ -189,7 +189,7 @@ namespace Spring.Context.Support
 
                 // get and create child context definitions
                 IList<IConfigurationSection> childContexts = GetChildContexts(section);
-                CreateChildContexts(context, configContext, childContexts);
+                CreateChildContexts(context, childContexts);
 
                 if (Log.IsDebugEnabled) Log.Debug(string.Format("context '{0}' created for name '{1}'", context, contextName));
             }
@@ -210,9 +210,8 @@ namespace Spring.Context.Support
         /// Create all child-contexts in the given <see cref="XmlNodeList"/> for the given context.
         /// </summary>
         /// <param name="parentContext">The parent context to use</param>
-        /// <param name="configContext">The current configContext <see cref="IConfigurationSectionHandler.Create"/></param>
         /// <param name="childContexts">The list of child context elements</param>
-        protected virtual void CreateChildContexts(IApplicationContext parentContext, object configContext, IList<IConfigurationSection> childContexts)
+        protected virtual void CreateChildContexts(IApplicationContext parentContext, IList<IConfigurationSection> childContexts)
         {
             // create child contexts for 'the most recently created context'...
             foreach (IConfigurationSection childContext in childContexts)
@@ -224,7 +223,7 @@ namespace Spring.Context.Support
         /// <summary>
         /// Instantiates a new context.
         /// </summary>
-        protected virtual IApplicationContext InstantiateContext(IApplicationContext parentContext, object configContext, string contextName, Type contextType, bool caseSensitive, IList<string> resources)
+        protected virtual IApplicationContext InstantiateContext(IApplicationContext parentContext, string contextName, Type contextType, bool caseSensitive, IList<string> resources)
         {
             IApplicationContext context;
             ContextInstantiator instantiator;
