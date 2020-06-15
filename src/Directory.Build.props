@@ -39,6 +39,9 @@
 
     <LangVersion>latest</LangVersion>
     <TargetFullFrameworkVersion>net461</TargetFullFrameworkVersion>
+    <TargetNetStandardVersion>netstandard2.0</TargetNetStandardVersion>
+    <TargetNetCoreVersion>netcoreapp3.0</TargetNetCoreVersion>
+
     <!--<TargetFullFrameworkVersion>net452</TargetFullFrameworkVersion>-->
 
   </PropertyGroup>

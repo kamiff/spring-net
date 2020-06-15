@@ -31,7 +31,7 @@
     <LangVersion>latest</LangVersion>
     <!--<TargetFullFrameworkVersion>net452</TargetFullFrameworkVersion>-->
     <TargetFullFrameworkVersion>net461</TargetFullFrameworkVersion>
-
+    <TargetNetCoreVersion>netcoreapp3.0</TargetNetCoreVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

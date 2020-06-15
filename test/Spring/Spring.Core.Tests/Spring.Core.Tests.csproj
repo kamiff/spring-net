@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;$(TargetFullFrameworkVersion)</TargetFrameworks>
+    <TargetFrameworks>$(TargetNetCoreVersion);$(TargetFullFrameworkVersion)</TargetFrameworks>
     <!--<TargetFrameworks>netcoreapp2.1</TargetFrameworks>-->
   </PropertyGroup>
   <ItemGroup>
@@ -31,7 +31,7 @@
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(TargetNetCoreVersion)' ">
     <Compile Remove="Context\Attributes\FailAssemblyObjectDefinitionScannerTests.cs" />
     <Compile Remove="Context\Support\ApplicationContextAwareProcessorTests.cs" />
     <Compile Remove="Expressions\ExpressionEvaluatorTests.cs" />

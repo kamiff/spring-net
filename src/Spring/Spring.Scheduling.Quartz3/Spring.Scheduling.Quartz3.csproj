@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;$(TargetFullFrameworkVersion)</TargetFrameworks>
+    <TargetFrameworks>$(TargetNetStandardVersion);$(TargetFullFrameworkVersion)</TargetFrameworks>
     <Description>Spring.NET Integration with the Quartz Scheduling Library 3.x</Description>
   </PropertyGroup>
   <ItemGroup>

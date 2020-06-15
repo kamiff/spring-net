@@ -22,10 +22,13 @@ namespace Spring.Web.NetCore
         /// <returns></returns>
         public static IMvcBuilder UseSpringMVC(this IMvcBuilder builder, IApplicationContext springContext)
         {
-
             if (builder == null)
             {
                 throw new ArgumentNullException("builder");
+            }
+            if(springContext == null)
+            {
+                throw new ArgumentNullException("springContext");
             }
             var activator = new SpringControllerActivator(springContext);
             builder.Services.Replace(ServiceDescriptor.Singleton<IControllerActivator, SpringControllerActivator>((inter) => {
