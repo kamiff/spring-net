@@ -20,7 +20,7 @@ namespace Spring.Web.NetCore
         /// <param name="builder"></param>
         /// <param name="springContext"></param>
         /// <returns></returns>
-        public static IMvcBuilder UseSpringMVC(this IMvcBuilder builder, IApplicationContext springContext)
+        public static IMvcBuilder UseSpringControllerActivator(this IMvcBuilder builder, IApplicationContext springContext)
         {
             if (builder == null)
             {
@@ -31,7 +31,7 @@ namespace Spring.Web.NetCore
                 throw new ArgumentNullException("springContext");
             }
             var activator = new SpringControllerActivator(springContext);
-            builder.Services.Replace(ServiceDescriptor.Singleton<IControllerActivator, SpringControllerActivator>((inter) => {
+            builder.Services.Replace(ServiceDescriptor.Transient<IControllerActivator, SpringControllerActivator>((inter) => {
                 return activator;
             }));
             return builder;
@@ -44,7 +44,7 @@ namespace Spring.Web.NetCore
         /// <param name="builder"></param>
         /// <exception cref="NullReferenceException">Fires when IApplicationContext does not exist builder.Services or is not a singleton</exception>
         /// <returns></returns>
-        public static IMvcBuilder UseSpringMVC(this IMvcBuilder builder)
+        public static IMvcBuilder UseSpringControllerActivator(this IMvcBuilder builder)
         {
             if (builder == null)
             {
@@ -53,7 +53,7 @@ namespace Spring.Web.NetCore
             Type springContextClazz = typeof(IApplicationContext);
             if (builder.Services.Any(o => o.ServiceType.Equals(springContextClazz) && o.Lifetime == ServiceLifetime.Singleton))
             {
-                builder.Services.Replace(ServiceDescriptor.Singleton<IControllerActivator, SpringControllerActivator>());
+                builder.Services.Replace(ServiceDescriptor.Transient<IControllerActivator, SpringControllerActivator>());
             }
             else
             {
