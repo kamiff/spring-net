@@ -15,7 +15,13 @@ namespace Spring.Web.NetCore
     /// </summary>
     public class SpringControllerActivator : IControllerActivator
     {
+        /// <summary>
+        /// 
+        /// </summary>
         private readonly IApplicationContext context;
+        /// <summary>
+        /// 
+        /// </summary>
         private static readonly TypeActivatorCache typeActivatorCache = new TypeActivatorCache();
         /// <summary>
         /// Creates a new <see cref="SpringControllerActivator"/>.
