@@ -12,45 +12,69 @@ using Spring.Util;
 namespace Spring.Data.NHibernate.Support
 {
     /// <summary>
-    /// 
+    ///The OpenSessionInView Middleware
     /// </summary>
-    public class OpenSessionInViewMiddleware : SessionScope, IMiddleware
+    public class OpenSessionInViewMiddleware : SessionScope
     {
         /// <summary>
         /// 
         /// </summary>
+        private readonly RequestDelegate next;
+
+        /// <summary>
+        /// Create OpenSessionInViewMiddleware by Default Config Name:<paramref name="configSectionName"/> in appsettings.json
+        /// </summary>
+        /// <remarks>
+        /// "OpenSessionInView": {
+        ///     "SessionFactoryObjectName": "HibernateSessionFactory",
+        ///     "EntityInterceptorObjectName": "EntityInterceptorObjectName", /*Optional*/
+        ///     "SingleSession": true/false, /*Optional default:true*/
+        ///     "DefaultFlushMode" : "Never|Commit|Auto|Always" /*Optional default:Never*/
+        ///  }
+        /// </remarks>
         /// <param name="next"></param>
         /// <param name="configuration"></param>
-        /// <param name="configSection"></param>
-        public OpenSessionInViewMiddleware(IConfiguration configuration, string configSection = "openSessionInView") : base(new NetCoreConfigSectionSessionScopeSettings(configSection, configuration), false)
+        /// <param name="configSection">Root Config Section Name in appsettings.json</param>
+        public OpenSessionInViewMiddleware(RequestDelegate next, IConfiguration configuration, string configSectionName) : base(new NetCoreConfigSectionSessionScopeSettings(configSectionName, configuration), false)
         {
-
+            this.next = next;
         }
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="next"></param>
         /// <param name="sessionFactory"></param>
-        public OpenSessionInViewMiddleware(ISessionFactory sessionFactory) : base(sessionFactory, false)
-        { }
+        public OpenSessionInViewMiddleware(RequestDelegate next, ISessionFactory sessionFactory) : base(sessionFactory, false)
+        {
+            this.next = next;
+        }
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="next"></param>
         /// <param name="sessionFactory"></param>
-        public OpenSessionInViewMiddleware(ISessionFactory sessionFactory, IInterceptor entityInterceptor = null, bool singleSession = true, FlushMode defaultFlushMode = FlushMode.Never) : base(sessionFactory, entityInterceptor, singleSession, defaultFlushMode, false)
-        { }
+        public OpenSessionInViewMiddleware(RequestDelegate next, ISessionFactory sessionFactory, IInterceptor entityInterceptor = null, bool singleSession = true, FlushMode defaultFlushMode = FlushMode.Never) : base(sessionFactory, entityInterceptor, singleSession, defaultFlushMode, false)
+        {
+            this.next = next;
+        }
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="next"></param>
         /// <param name="settings"></param>
-        public OpenSessionInViewMiddleware(SessionScopeSettings settings) : base(settings, false)
+        public OpenSessionInViewMiddleware(RequestDelegate next, SessionScopeSettings settings) : base(settings, false)
         {
-
+            this.next = next;
         }
-
-        public Task InvokeAsync(HttpContext context, RequestDelegate next)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public Task Invoke(HttpContext context)
         {
             // Do something with context near the beginning of request processing.
             try
@@ -60,9 +84,10 @@ namespace Spring.Data.NHibernate.Support
             }
             finally
             {
+                // Clean up.
                 this.Close();
             }
-            // Clean up.
+            
         }
     }
 
@@ -74,10 +99,22 @@ namespace Spring.Data.NHibernate.Support
         /// <summary>
         /// 
         /// </summary>
+        public const string DEFAULT_CONFIG_SECTION_NAME = "OpenSessionInView";
+        /// <summary>
+        /// Add OpenSessionInViewMiddleware 
+        /// </summary>
+        /// <remarks>
+        /// "OpenSessionInView": {
+        ///     "SessionFactoryObjectName": "HibernateSessionFactory",
+        ///     "EntityInterceptorObjectName": "EntityInterceptorObjectName", /*Optional*/
+        ///     "SingleSession": true/false, /*Optional default:true*/
+        ///     "DefaultFlushMode" : "Never|Commit|Auto|Always" /*Optional default:Never*/
+        ///  }
+        /// </remarks>
         /// <param name="builder"></param>
         /// <param name="configSection"></param>
         /// <returns></returns>
-        public static IApplicationBuilder WithOpenSessionInViewMiddleware(this IApplicationBuilder builder, string configSection = "openSessionInView")
+        public static IApplicationBuilder WithOpenSessionInViewMiddleware(this IApplicationBuilder builder, string configSection = DEFAULT_CONFIG_SECTION_NAME)
         {
             AssertUtils.ArgumentNotNull(builder, "builder");
             AssertUtils.ArgumentHasText(configSection, "configSection");
@@ -85,7 +122,7 @@ namespace Spring.Data.NHibernate.Support
         }
 
         /// <summary>
-        /// 
+        /// Add OpenSessionInViewMiddleware 
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="configSection"></param>
@@ -98,7 +135,7 @@ namespace Spring.Data.NHibernate.Support
             return builder.UseMiddleware<OpenSessionInViewMiddleware>(sessionFactory);
         }
         /// <summary>
-        /// 
+        /// Add OpenSessionInViewMiddleware 
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="configSection"></param>
@@ -118,7 +155,7 @@ namespace Spring.Data.NHibernate.Support
         }
 
         /// <summary>
-        /// 
+        /// Add OpenSessionInViewMiddleware 
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="configSection"></param>

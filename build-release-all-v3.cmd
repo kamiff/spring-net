@@ -7,7 +7,7 @@ cd ..
 @echo ...
 @echo Running full Build Script, capturing output to buildlog.txt file...
 @echo Start Time: %time%
-build-support\tools\nant\bin\nant clean package -f:spring.build -D:project.build.sign=true -D:build-ems=false -D:test.integration.ems=false -D:test.integration.data=false -D:mstest.exe="c:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\mstest.exe" -D:package.version=3.0.0 -D:nuget.package.version=3.0.1-alpha -D:vs-net.mstest.bin.dir="c:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE" -D:skipmstestrun=true > buildlog.txt
+build-support\tools\nant\bin\nant clean package -f:spring.build -D:project.build.sign=true -D:build-ems=false -D:test.integration.ems=false -D:test.integration.data=false -D:mstest.exe="c:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\mstest.exe" -D:package.version=3.0.3 -D:nuget.package.version=3.0.3-alpha -D:vs-net.mstest.bin.dir="c:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE" -D:skipmstestrun=true > buildlog.txt
 rem for reference, package suffix arg = -D:nuget.version.suffix=RC2
 @echo .
 @echo ..
