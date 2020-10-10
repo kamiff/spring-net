@@ -74,6 +74,14 @@ namespace Spring.Context.Support
         /// </summary>
         private const string CHILD_TAG = "$CHILD_CONTEXT$";
         /// <summary>
+        /// 
+        /// </summary>
+        private readonly IConfiguration netCoreConfigObject;
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly string netCoreConfigObjectName = "NetCoreConfig";
+        /// <summary>
         /// The <see cref="System.Type"/> of <see cref="Spring.Context.IApplicationContext"/>
         /// created if no <c>type</c> attribute is specified on a <c>context</c> element.
         /// </summary>
@@ -109,6 +117,44 @@ namespace Spring.Context.Support
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="netCoreConfigObject"></param>
+        /// <param name="netCoreConfigObjectName"></param>
+        public ContextCreater(IConfiguration netCoreConfigObject, string netCoreConfigObjectName = "NetCoreConfig")
+        {
+            AssertUtils.ArgumentNotNull(netCoreConfigObject, "netCoreConfigObject");
+            AssertUtils.ArgumentHasText(netCoreConfigObjectName, "netCoreConfigObjectName");
+
+            this.netCoreConfigObject = netCoreConfigObject;
+            this.netCoreConfigObjectName = netCoreConfigObjectName;
+        }
+
+        /// <summary>
+        /// Creates an <see cref="Spring.Context.IApplicationContext"/> instance
+        /// using the context definitions supplied in a custom
+        /// configuration section.
+        /// </summary>
+        /// <remarks>
+        /// <p>
+        /// This <see cref="Spring.Context.IApplicationContext"/> instance is
+        /// also used to configure the <see cref="ContextRegistry"/>.
+        /// </p>
+        /// </remarks>
+        /// <param name="section">
+        /// The <see cref="System.Xml.XmlNode"/> for the section.
+        /// </param>
+        /// <returns>
+        /// An <see cref="Spring.Context.IApplicationContext"/> instance
+        /// populated with the object definitions supplied in the configuration
+        /// section.
+        /// </returns>
+        public IApplicationContext Create(string contextElement = "springContext")
+        {
+            return Create(null, this.netCoreConfigObject, contextElement);
+        }
+
+        /// <summary>
         /// Creates an <see cref="Spring.Context.IApplicationContext"/> instance
         /// using the context definitions supplied in a custom
         /// configuration section.
@@ -123,7 +169,7 @@ namespace Spring.Context.Support
         /// The configuration settings in a corresponding parent
         /// configuration section.
         /// </param>
-        /// <param name="configContext">
+        /// <param name="netCoreConfigObject">
         /// The configuration context when called from the ASP.NET
         /// configuration system. Otherwise, this parameter is reserved and
         /// is <see langword="null"/>.
@@ -136,7 +182,7 @@ namespace Spring.Context.Support
         /// populated with the object definitions supplied in the configuration
         /// section.
         /// </returns>
-        public IApplicationContext Create(IApplicationContext parent, IConfiguration configContext, string contextElement = "springContext")
+        protected IApplicationContext Create(IApplicationContext parent, IConfiguration netCoreConfigObject, string contextElement = "springContext")
         {
             
             #region Sanity Checks
@@ -145,7 +191,7 @@ namespace Spring.Context.Support
                 throw ConfigurationUtils.CreateConfigurationException(
                     "Context configuration section could not be empty.");
             }
-            IConfigurationSection section = contextElement.Equals(CHILD_TAG, StringComparison.OrdinalIgnoreCase) ? configContext as IConfigurationSection : configContext.GetSection(contextElement);
+            IConfigurationSection section = contextElement.Equals(CHILD_TAG, StringComparison.OrdinalIgnoreCase) ? netCoreConfigObject as IConfigurationSection : netCoreConfigObject.GetSection(contextElement);
 
             if (section == null || !section.Exists())
             {
@@ -226,16 +272,7 @@ namespace Spring.Context.Support
         protected virtual IApplicationContext InstantiateContext(IApplicationContext parentContext, string contextName, Type contextType, bool caseSensitive, IList<string> resources)
         {
             IApplicationContext context;
-            ContextInstantiator instantiator;
-
-            if (parentContext == null)
-            {
-                instantiator = new RootContextInstantiator(contextType, contextName, caseSensitive, new List<string>(resources).ToArray());
-            }
-            else
-            {
-                instantiator = new DescendantContextInstantiator(parentContext, contextType, contextName, caseSensitive, new List<string>(resources).ToArray());
-            }
+            ContextInstantiator instantiator = new NetCoreContextInstantiator(parentContext, contextType, contextName, caseSensitive, resources.ToArray(), this.netCoreConfigObject, this.netCoreConfigObjectName);
 
             if (IsLazy)
             {

@@ -17,21 +17,18 @@ namespace Spring.Extensions.DependencyInjection
     public static class ContextCreaterExtensions
     {
         /// <summary>
-        /// The object name by the net core system configuration object
-        /// <see cref="IConfiguration"/>
-        /// </summary>
-        private const string NET_CORE_CONFIG_OBJECT_NAME = "NetCoreConfig";
-        /// <summary>
         /// Init Spring Ioc Context and set into services <see cref="IServiceCollection"/>
         /// </summary>
         /// <param name="services"></param>
         /// <param name="configuration"></param>
         /// <param name="sectionName"></param>
+        /// <param name="netCoreConfigObjectName">The object name by the net core system configuration object</param>
         /// <returns></returns>
         public static IServiceCollection WithSpring(this IServiceCollection services, IConfiguration configuration, string sectionName = "springContext", string netCoreConfigObjectName = "NetCoreConfig")
         {
-            var creater = new ContextCreater();
-            IApplicationContext springContext = creater.Create(null, configuration, sectionName);
+            var creater = new ContextCreater(configuration, netCoreConfigObjectName);
+            IApplicationContext springContext = creater.Create(sectionName);
+            /*
             if (springContext is IConfigurableApplicationContext)
             {
                 if (StringUtils.IsNullOrEmpty(netCoreConfigObjectName))
@@ -48,6 +45,7 @@ namespace Spring.Extensions.DependencyInjection
                     ctx.ObjectFactory.RegisterSingleton(netCoreConfigObjectName, configuration);
                 }
             }
+            */
             services.AddSingleton(springContext);
             return services;
         }

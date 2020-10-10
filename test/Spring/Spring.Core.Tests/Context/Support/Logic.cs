@@ -43,5 +43,9 @@ namespace Spring.Context.Support
         }
 
         #endregion
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ConnectionString { get; set; }
     }
 }

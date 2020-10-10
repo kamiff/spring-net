@@ -68,6 +68,7 @@
     <EmbeddedResource Include="Objects\Factory\Xml\*.xsd" />
     <EmbeddedResource Include="Validation\*.xml" />
     <None Remove="appsettings.json" />
+    <None Remove="Context\Support\contextD.xml" />
     <EmbeddedResource Include="Util\ConfigXmlDocumentTests_SampleConfig.xml" />
     <EmbeddedResource Include="Objects\Factory\TestResource.txt" />
     <EmbeddedResource Include="Reflection\Dynamic\SafePropertyTests_TestObject.vb" />

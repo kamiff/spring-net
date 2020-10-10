@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Spring.Objects.Factory.Config;
 using Spring.Reflection.Dynamic;
 using Spring.Util;
 using System;
@@ -6,10 +7,12 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace Spring.Context.Support.Internal
+namespace Spring.Context.Support
 {
-    #region Inner Class : RootContextInstantiator
-
+    
+    /// <summary>
+    /// 
+    /// </summary>
     internal sealed class NetCoreContextInstantiator : ContextInstantiator
     {
         private readonly IConfiguration netCoreConfigObject;
@@ -20,6 +23,9 @@ namespace Spring.Context.Support.Internal
             Type contextType, string contextName, bool caseSensitive, string[] resources, IConfiguration netCoreConfigObject, string netCoreConfigObjectName = "NetCoreConfig")
             : base(contextType, contextName, caseSensitive, resources)
         {
+            AssertUtils.ArgumentNotNull(netCoreConfigObject, "netCoreConfigObject");
+            AssertUtils.ArgumentHasText(netCoreConfigObjectName, "netCoreConfigObjectName");
+
             this.netCoreConfigObject = netCoreConfigObject;
             this.parentContext = parentContext;
             this.netCoreConfigObjectName = netCoreConfigObjectName;
@@ -34,14 +40,14 @@ namespace Spring.Context.Support.Internal
             ConstructorInfo ctor)
         {
             IConfigurableApplicationContext ctx = new SafeConstructor(ctor).Invoke(new object[] { false, ContextName, CaseSensitive, parentContext, Resources }) as IConfigurableApplicationContext;
-
-
-
+            //Only Root Context Register the NetCore Config Object :IConfiguration
+            if (parentContext == null)
+            {
+                ctx.AddObjectFactoryPostProcessor(new DelegateObjectFactoryConfigurer(of => of.RegisterSingleton(this.netCoreConfigObjectName, this.netCoreConfigObject)));
+            }
             ctx.Refresh();
 
             return ctx;
         }
     }
-
-    #endregion
 }
