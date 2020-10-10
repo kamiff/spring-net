@@ -273,6 +273,7 @@ Commandline Examples:
     <echo message="framework directory : ${framework::get-framework-directory(framework::get-target-framework())}"/>
     <echo message="assembly directory : ${framework::get-assembly-directory(framework::get-target-framework())}"/>
     <echo message=""/>
+    <echo message="msbuild path = ${msbuild.exe}" />
   </target>
 
 
