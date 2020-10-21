@@ -70,6 +70,17 @@ namespace Spring.Objects.Factory.Config
         /// 
         /// </summary>
         private readonly string sectionName = "connectionStrings";
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <summary>
+        /// Initializes a new instance of <see cref="NetCoreConnectionStringsVariableSource"/> from the given <paramref name="sectionName"/>
+        /// </summary>
+        public NetCoreConnectionStringsVariableSource(IConfiguration configuration):this(configuration, "connectionStrings")
+        {
+        }
         /// <summary>
         /// 
         /// </summary>

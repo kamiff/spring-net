@@ -18,16 +18,24 @@ namespace Spring.Context.Support
             .Add(new JsonConfigurationSource { Path = "appsettings.json", ReloadOnChange = true })
             .Build();
 
-            var creater = new ContextCreater();
-            var ctx = creater.Create(null, config, "springContext") as XmlApplicationContext;
+            var creater = new ContextCreater(config);
+            var ctx = creater.Create("springContext") as XmlApplicationContext;
             
             Assert.IsTrue(ctx.ContainsObject("service"));
             Assert.IsTrue(ctx.ContainsObject("logicOne"));
             Assert.IsTrue(ctx.ContainsObject("logicTwo"));
             Service service = (Service)ctx.GetObject("service");
+
+            Logic service4 = (Logic)ctx.GetObject("logicFour");
+
+            
+
             ctx.Refresh();
             Assert.IsTrue(service.ProperlyDestroyed);
             service = (Service)ctx.GetObject("service");
+
+
+
             ctx.Dispose();
             Assert.IsTrue(service.ProperlyDestroyed);
         }

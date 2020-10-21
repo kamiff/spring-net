@@ -647,7 +647,7 @@ Commandline Examples:
 
     <call target="build-all-function"/>
 
-    <call target="doc"/>
+    ,<!--<call target="doc"/>-->
 
 
     <call target="package-release-files"/>

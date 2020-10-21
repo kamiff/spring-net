@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<objects xmlns="http://www.springframework.net">
+
+  <object type="Spring.Objects.Factory.Config.VariablePlaceholderConfigurer, Spring.Core">
+    <property name="IgnoreUnresolvablePlaceholders" value="true" />
+    <property name="VariableSources">
+      <list>
+        <!--From .net's connection strings configuration section:-->
+        <object type="Spring.Objects.Factory.Config.NetCoreConnectionStringsVariableSource, Spring.Core" >
+          <constructor-arg name="configuration" >
+            <ref object="NetCoreConfig" />
+          </constructor-arg>
+        </object>
+      </list>
+    </property>
+  </object>
+
+  <object id="logicFour" type="Spring.Context.Support.Logic, Spring.Core.Tests">
+    <property name="assembler" ref="assemblerOne"/>
+    <property name="ConnectionString" value="${Prd.connectionString}" />
+  </object>
+
+</objects>
