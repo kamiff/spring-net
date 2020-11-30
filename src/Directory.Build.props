@@ -18,8 +18,8 @@
     <CommonLoggingVersion>3.4.1</CommonLoggingVersion>
 
     <Authors>SpringSource</Authors>
-    <PackageIconUrl>http://springframework.net/images/SpringSource_Leaves32x32.png</PackageIconUrl>
-    <PackageLicenseUrl>http://www.springframework.net/license.html</PackageLicenseUrl>
+    <PackageIcon>images\SpringSource_Leaves32x32.png</PackageIcon>
+    <PackageLicense>http://www.springframework.net/license.html</PackageLicense>
     <PackageProjectUrl>http://www.springframework.net/</PackageProjectUrl>
     <PackageTags>Library</PackageTags>
 
@@ -49,6 +49,10 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="All"/>
   </ItemGroup>
   
+  <ItemGroup>
+    <None Include="..\..\SpringSource_Leaves32x32.png" Pack="true" PackagePath="images" Link="SpringSource_Leaves32x32.png"/>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="ConfigureAwaitChecker.Analyzer" Version="4.0.0" PrivateAssets="All" />
   </ItemGroup>
