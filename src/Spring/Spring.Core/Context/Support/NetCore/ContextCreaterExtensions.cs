@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Spring.Context;
 using Spring.Context.Support;
 using Spring.Objects.Factory;
@@ -26,28 +27,44 @@ namespace Spring.Extensions.DependencyInjection
         /// <returns></returns>
         public static IServiceCollection WithSpring(this IServiceCollection services, IConfiguration configuration, string sectionName = "springContext", string netCoreConfigObjectName = "NetCoreConfig")
         {
+            WithSpringReturnContext(services, configuration, sectionName, netCoreConfigObjectName);
+            return services;
+        }
+
+        /// <summary>
+        /// Init Spring Ioc Context and set into services <see cref="IServiceCollection"/> and return the <see cref="IApplicationContext"/>
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <param name="sectionName"></param>
+        /// <param name="netCoreConfigObjectName">The object name by the net core system configuration object</param>
+        /// <returns></returns>
+        public static IApplicationContext WithSpringReturnContext(this IServiceCollection services, IConfiguration configuration, string sectionName = "springContext", string netCoreConfigObjectName = "NetCoreConfig")
+        {
             var creater = new ContextCreater(configuration, netCoreConfigObjectName);
             IApplicationContext springContext = creater.Create(sectionName);
-            /*
-            if (springContext is IConfigurableApplicationContext)
-            {
-                if (StringUtils.IsNullOrEmpty(netCoreConfigObjectName))
-                {
-                    netCoreConfigObjectName = NET_CORE_CONFIG_OBJECT_NAME;
-                }
-                IConfigurableApplicationContext ctx = (IConfigurableApplicationContext)springContext;
-                if (ctx.ObjectFactory.ContainsSingleton(netCoreConfigObjectName))
-                {
-                    throw new ObjectDefinitionStoreException(string.Format("Object name:{0} is already in use", netCoreConfigObjectName));
-                }
-                else
-                {
-                    ctx.ObjectFactory.RegisterSingleton(netCoreConfigObjectName, configuration);
-                }
-            }
-            */
             services.AddSingleton(springContext);
-            return services;
+            return springContext;
+        }
+        /// <summary>
+        /// Register the net core default ServiceProvider into Spring Context as a singleton object named 
+        /// </summary>
+        /// <param name="host"></param>
+        /// <param name="serviceProviderName">the name of ServiceProvider in Spring context</param>
+        /// <returns></returns>
+        public static IHost LoadServiceProviderIntoSpring(this IHost host, string serviceProviderName = "systemServiceProvider")
+        {
+            if (string.IsNullOrWhiteSpace(serviceProviderName))
+            {
+                serviceProviderName = "systemServiceProvider";
+            }
+            IConfigurableApplicationContext springContext = host.Services.GetService(typeof(IApplicationContext)) as IConfigurableApplicationContext;
+            if (springContext != null)
+            {
+                springContext.ObjectFactory.RegisterSingleton(serviceProviderName, host.Services);
+            }
+
+            return host;
         }
     }
 }
