@@ -12,7 +12,7 @@ namespace Spring.Web.NetCore
     /// Use the Spring container to create the Controller object. If the specified object is not configured in the container, it will be created by default <see cref="DefaultControllerActivator"/>.
     /// 
     /// <see cref="IControllerActivator"/> that uses type activation to create controllers.
-    /// </summary>
+    /// </summary> 
     public class SpringControllerActivator : IControllerActivator
     {
         /// <summary>
