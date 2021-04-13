@@ -69,7 +69,7 @@ namespace Spring.Data.NHibernate.Support
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            using (new SessionScope(this.sessionScopeSettings, false))
+            using (new SessionScope(this.sessionScopeSettings, true))
             {
                 return next(context);
             }
