@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using NHibernate;
+using Spring.Context;
 using Spring.Context.Support;
 using Spring.Objects.Factory.Config;
 using Spring.Util;
@@ -19,7 +20,7 @@ namespace Spring.Data.NHibernate.Support
 
         private readonly string sessionFactoryObjectName = DEFAULT_SESSION_FACTORY_OBJECT_NAME;
         private readonly string entityInterceptorObjectName = null;
-
+        private readonly IApplicationContext applicationContext;
 
 
         /// <summary>
@@ -43,9 +44,12 @@ namespace Spring.Data.NHibernate.Support
         /// </summary>
         /// <param name="ownerType">The type, who's name will be used to prefix setting variables with</param>
         /// <param name="variableSource">The variable source to obtain settings from.</param>
-        public NetCoreConfigSectionSessionScopeSettings(string sectionName, IConfiguration configuration)
+        public NetCoreConfigSectionSessionScopeSettings(string sectionName, IConfiguration configuration, IApplicationContext applicationContext)
             : base()
         {
+            AssertUtils.ArgumentNotNull(applicationContext, "applicationContext");
+            this.applicationContext = applicationContext;
+
             IVariableSource variableSource = new NetCoreConfigSectionVariableSource(sectionName, configuration);
             const string sessionFactoryObjectNameSettingsKey =  "SessionFactoryObjectName";
             const string entityInterceptorObjectNameSettingsKey = "EntityInterceptorObjectName";
@@ -70,7 +74,7 @@ namespace Spring.Data.NHibernate.Support
         {
             if (StringUtils.HasText(entityInterceptorObjectName))
             {
-                return (IInterceptor)ContextRegistry.GetContext().GetObject(entityInterceptorObjectName);
+                return (IInterceptor)this.applicationContext.GetObject(entityInterceptorObjectName);
             }
             return null;
         }
@@ -84,7 +88,7 @@ namespace Spring.Data.NHibernate.Support
         {
             if (StringUtils.HasText(sessionFactoryObjectName))
             {
-                return (ISessionFactory)ContextRegistry.GetContext().GetObject(sessionFactoryObjectName);
+                return (ISessionFactory)this.applicationContext.GetObject(sessionFactoryObjectName);
             }
             return null;
         }

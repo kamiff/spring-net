@@ -14,13 +14,13 @@ namespace Spring.Data.NHibernate.Support
     /// <summary>
     ///The OpenSessionInView Middleware
     /// </summary>
-    public class OpenSessionInViewMiddleware : SessionScope
+    public class OpenSessionInViewMiddleware
     {
         /// <summary>
         /// 
         /// </summary>
         private readonly RequestDelegate next;
-
+        private readonly NetCoreConfigSectionSessionScopeSettings sessionScopeSettings;
         /// <summary>
         /// Create OpenSessionInViewMiddleware by Default Config Name:<paramref name="configSectionName"/> in appsettings.json
         /// </summary>
@@ -35,9 +35,10 @@ namespace Spring.Data.NHibernate.Support
         /// <param name="next"></param>
         /// <param name="configuration"></param>
         /// <param name="configSection">Root Config Section Name in appsettings.json</param>
-        public OpenSessionInViewMiddleware(RequestDelegate next, IConfiguration configuration, string configSectionName) : base(new NetCoreConfigSectionSessionScopeSettings(configSectionName, configuration), false)
+        public OpenSessionInViewMiddleware(RequestDelegate next, IConfiguration configuration, string configSectionName, IApplicationContext applicationContext)
         {
             this.next = next;
+            this.sessionScopeSettings = new NetCoreConfigSectionSessionScopeSettings(configSectionName, configuration, applicationContext);
         }
 
         /// <summary>
@@ -45,9 +46,10 @@ namespace Spring.Data.NHibernate.Support
         /// </summary>
         /// <param name="next"></param>
         /// <param name="sessionFactory"></param>
-        public OpenSessionInViewMiddleware(RequestDelegate next, ISessionFactory sessionFactory) : base(sessionFactory, false)
+        public OpenSessionInViewMiddleware(RequestDelegate next, ISessionFactory sessionFactory)
         {
             this.next = next;
+            this.sessionScopeSettings = new NetCoreConfigSectionSessionScopeSettings(sessionFactory);
         }
 
         /// <summary>
@@ -55,19 +57,10 @@ namespace Spring.Data.NHibernate.Support
         /// </summary>
         /// <param name="next"></param>
         /// <param name="sessionFactory"></param>
-        public OpenSessionInViewMiddleware(RequestDelegate next, ISessionFactory sessionFactory, IInterceptor entityInterceptor = null, bool singleSession = true, FlushMode defaultFlushMode = FlushMode.Never) : base(sessionFactory, entityInterceptor, singleSession, defaultFlushMode, false)
+        public OpenSessionInViewMiddleware(RequestDelegate next, ISessionFactory sessionFactory, IInterceptor entityInterceptor = null, bool singleSession = true, FlushMode defaultFlushMode = FlushMode.Never)
         {
             this.next = next;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="next"></param>
-        /// <param name="settings"></param>
-        public OpenSessionInViewMiddleware(RequestDelegate next, SessionScopeSettings settings) : base(settings, false)
-        {
-            this.next = next;
+            this.sessionScopeSettings = new NetCoreConfigSectionSessionScopeSettings(sessionFactory, entityInterceptor, singleSession, defaultFlushMode);
         }
         /// <summary>
         /// 
@@ -76,6 +69,11 @@ namespace Spring.Data.NHibernate.Support
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
+            using (new SessionScope(this.sessionScopeSettings, false))
+            {
+                return next(context);
+            }
+            /*
             // Do something with context near the beginning of request processing.
             try
             {
@@ -87,7 +85,7 @@ namespace Spring.Data.NHibernate.Support
                 // Clean up.
                 this.Close();
             }
-            
+            */
         }
     }
 
@@ -118,7 +116,9 @@ namespace Spring.Data.NHibernate.Support
         {
             AssertUtils.ArgumentNotNull(builder, "builder");
             AssertUtils.ArgumentHasText(configSection, "configSection");
-            return builder.UseMiddleware<OpenSessionInViewMiddleware>(configSection);
+            IApplicationContext ctx = builder.ApplicationServices.GetRequiredService<IApplicationContext>();
+
+            return builder.UseMiddleware<OpenSessionInViewMiddleware>(configSection, ctx);
         }
 
         /// <summary>
@@ -152,19 +152,6 @@ namespace Spring.Data.NHibernate.Support
                 throw new NoSuchObjectDefinitionException("sessionFactoryName", "Init Open Session In View Middleware By FactoryName");
             }
             return builder.UseMiddleware<OpenSessionInViewMiddleware>(sf);
-        }
-
-        /// <summary>
-        /// Add OpenSessionInViewMiddleware 
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="configSection"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder WithOpenSessionInViewMiddleware(this IApplicationBuilder builder, SessionScopeSettings settings)
-        {
-            AssertUtils.ArgumentNotNull(builder, "builder");
-            AssertUtils.ArgumentNotNull(settings, "settings");
-            return builder.UseMiddleware<OpenSessionInViewMiddleware>(settings);
         }
 
     }
